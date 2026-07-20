@@ -2,8 +2,9 @@
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Stride.Core;
 using Stride.Core.Annotations;
 using Stride.Core.Mathematics;
@@ -19,14 +20,14 @@ namespace Stride.Graphics
     {
         private const int VertexBufferCount = 2;
 
-        private const int IndexStride = sizeof(int);
-
         private Buffer[] vertexBuffers;
         private int activeVertexBufferIndex;
         private VertexBufferBinding[] vertexBuffersBinding;
 
-        private Buffer indexBuffer;
         private IndexBufferBinding indexBufferBinding;
+
+        // Exposed for testing.
+        internal Buffer IndexBuffer => indexBufferBinding?.Buffer;
 
         private MutablePipelineState pipelineState;
         private EffectInstance simpleEffect;
@@ -59,12 +60,6 @@ namespace Stride.Graphics
 
             activeVertexBufferIndex = -1;
 
-            if (indexBuffer != null)
-            {
-                indexBuffer.Dispose();
-                indexBuffer = null;
-            }
-
             indexBufferBinding = null;
             pipelineState = null;
 
@@ -86,33 +81,35 @@ namespace Stride.Graphics
         /// Initializes a FastTextRendering instance (create and build required ressources, ...).
         /// </summary>
         /// <param name="graphicsContext">The current GraphicsContext.</param>
-        private unsafe void Initialize(GraphicsContext graphicsContext, int maxCharacters)
+        private void Initialize(GraphicsContext graphicsContext, int maxCharacters)
         {
             maxCharacterCount = maxCharacters;
-            var indexBufferSize = maxCharacters * 6 * sizeof(int);
-            var indexBufferLength = indexBufferSize / IndexStride;
+            var indexBufferLength = maxCharacters * 6;
 
-            // Map and build the indice buffer
-            indexBuffer = graphicsContext.Allocator.GetTemporaryBuffer(new BufferDescription(indexBufferSize, BufferFlags.IndexBuffer, GraphicsResourceUsage.Dynamic));
-
-            var mappedIndices = graphicsContext.CommandList.MapSubResource(indexBuffer, 0, MapMode.WriteNoOverwrite, false, 0, indexBufferSize);
-            var indexPointer = mappedIndices.DataBox.DataPointer;
-
-            var i = 0;
-            for (var c = 0; c < maxCharacters; c++)
+            // Build the indices in CPU memory. Building them through a mapped GPU buffer read the pointer back
+            // after unmapping it, which crashes on APIs whose unmap releases the mapping (Vulkan).
+            var indices = ArrayPool<int>.Shared.Rent(indexBufferLength);
+            try
             {
-                *(int*)(indexPointer + IndexStride * i++) = c * 4 + 0;
-                *(int*)(indexPointer + IndexStride * i++) = c * 4 + 1;
-                *(int*)(indexPointer + IndexStride * i++) = c * 4 + 2;
+                var i = 0;
+                for (var c = 0; c < maxCharacters; c++)
+                {
+                    indices[i++] = c * 4 + 0;
+                    indices[i++] = c * 4 + 1;
+                    indices[i++] = c * 4 + 2;
 
-                *(int*)(indexPointer + IndexStride * i++) = c * 4 + 1;
-                *(int*)(indexPointer + IndexStride * i++) = c * 4 + 3;
-                *(int*)(indexPointer + IndexStride * i++) = c * 4 + 2;
+                    indices[i++] = c * 4 + 1;
+                    indices[i++] = c * 4 + 3;
+                    indices[i++] = c * 4 + 2;
+                }
+
+                // Rent may return a larger array, so slice to the exact length.
+                indexBufferBinding = new IndexBufferBinding(Buffer.Index.New(graphicsContext.CommandList.GraphicsDevice, MemoryMarshal.AsBytes(indices.AsSpan(0, indexBufferLength))), true, indexBufferLength);
             }
-
-            graphicsContext.CommandList.UnmapSubResource(mappedIndices);
-
-            indexBufferBinding = new IndexBufferBinding(Buffer.Index.New(graphicsContext.CommandList.GraphicsDevice, new ReadOnlySpan<byte>((void*)indexPointer, indexBufferSize)), true, indexBufferLength);
+            finally
+            {
+                ArrayPool<int>.Shared.Return(indices);
+            }
 
             // Create vertex buffers
             vertexBuffers = new Buffer[VertexBufferCount];
