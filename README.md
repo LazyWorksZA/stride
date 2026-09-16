@@ -122,7 +122,7 @@ This project is supported by the [.NET Foundation](http://www.dotnetfoundation.o
 
 Stride is covered by the [MIT License](LICENSE.md) unless stated otherwise (i.e. for some files that are copied from other projects). You can find the list of third-party projects [here](THIRD%20PARTY.md). Contributors need to sign the following [Contribution License Agreement](https://github.com/dotnet-foundation/.github/blob/main/CLA/dotnetfoundation.yml).
 
-## ✨ Contributors { #contributors }
+## <a id="custom-setup-link"></a>✨ Contributors
 
 Thanks to all these wonderful people who have contributed to Stride!
 
