@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using Stride.Core;
 using Stride.Core.Assets;
 using Stride.Core.Assets.Editor.Quantum.NodePresenters.Commands;
 using Stride.Core.Assets.Editor.Services;
@@ -22,6 +23,7 @@ using Stride.Core.Translation;
 using Stride.Assets.Presentation.ViewModel;
 using Stride.Assets.Rendering;
 using Stride.Core.Assets.Editor.Annotations;
+using Stride.Core.Assets.Quantum;
 using Stride.Rendering;
 using Stride.Rendering.Compositing;
 
@@ -37,7 +39,14 @@ namespace Stride.Assets.Presentation.AssetEditors.GraphicsCompositorEditor.ViewM
         private readonly IObjectNode renderFeaturesNode;
         private readonly IObjectNode cameraSlotsNode;
         private readonly IObjectNode sharedRenderersNode;
-        
+        private readonly Dictionary<object, CompositorObjectViewModel> objectItems = new(ReferenceEqualityComparer.Instance);
+        private string frameSelectionSource;
+        private string selectionBanner;
+        private bool rebuildPending;
+
+        public const string AddedHereMarker = "added here";
+        public const string FromArchetypeMarker = "from archetype";
+
         public GraphicsCompositorEditorViewModel([NotNull] GraphicsCompositorViewModel graphicsCompositor) : base(graphicsCompositor)
         {
             // Create the service needed to manage observable view models
@@ -65,6 +74,71 @@ namespace Stride.Assets.Presentation.AssetEditors.GraphicsCompositorEditor.ViewM
 
             AddNewCameraSlotCommand = new AnonymousCommand(ServiceProvider, AddNewCameraSlot);
             RemoveSelectedCameraSlotsCommand = new AnonymousCommand(ServiceProvider, RemoveSelectedCameraSlots);
+
+            Frame = new CompositorFrameViewModel(this);
+            Structure = new CompositorStructureViewModel(this);
+        }
+
+        public CompositorFrameViewModel Frame { get; }
+
+        public CompositorStructureViewModel Structure { get; }
+
+        /// <summary>
+        /// What is selected, where it was selected and where it sits in the compositor.
+        /// </summary>
+        public string SelectionBanner { get => selectionBanner; private set => SetValue(ref selectionBanner, value); }
+
+        /// <summary>
+        /// The selection made in the Frame tab or the Structure tree.
+        /// </summary>
+        public ObservableList<object> SelectedFrameItems { get; } = new ObservableList<object>();
+
+        internal bool HasArchetype => Asset.Asset.Archetype != null;
+
+        internal IObjectNode NodeOf(object value) => Session.AssetNodeContainer.GetOrCreateNode(value);
+
+        /// <summary>
+        /// Whether an item of a collection comes from the archetype or was added by this compositor; <c>null</c> without an archetype.
+        /// </summary>
+        internal string ArchetypeMarker(IObjectNode collectionNode, int index)
+        {
+            if (!HasArchetype || collectionNode is not IAssetObjectNode assetNode)
+                return null;
+            return assetNode.IsItemInherited(new NodeIndex(index)) ? FromArchetypeMarker : AddedHereMarker;
+        }
+
+        internal string ArchetypeMarkerOf(RootRenderFeature feature)
+        {
+            var index = Asset.Asset.RenderFeatures.IndexOf(feature);
+            return index < 0 ? null : ArchetypeMarker(renderFeaturesNode, index);
+        }
+
+        /// <summary>
+        /// Selects an object of the compositor from the Frame tab or the Structure tree, so the property grid shows it.
+        /// </summary>
+        internal void SelectFromFrame(object value, string source)
+        {
+            if (value is null)
+                return;
+
+            var item = (GraphicsCompositorItemViewModel)(value switch
+            {
+                RootRenderFeature feature => RenderFeatures.FirstOrDefault(x => x.RenderFeature == feature),
+                RenderStage stage => RenderStages.FirstOrDefault(x => x.RenderStage == stage),
+                SceneCameraSlot slot => CameraSlots.FirstOrDefault(x => x.CameraSlot == slot),
+                _ => null,
+            }) ?? ObjectItem(value);
+
+            frameSelectionSource = source;
+            SelectedFrameItems.Clear();
+            SelectedFrameItems.Add(item);
+        }
+
+        private CompositorObjectViewModel ObjectItem(object value)
+        {
+            if (!objectItems.TryGetValue(value, out var item))
+                objectItems.Add(value, item = new CompositorObjectViewModel(this, value, CompositorFrameViewModel.NameOf(value)));
+            return item;
         }
 
         public override GraphicsCompositorViewModel Asset => (GraphicsCompositorViewModel)base.Asset;
@@ -163,8 +237,16 @@ namespace Stride.Assets.Presentation.AssetEditors.GraphicsCompositorEditor.ViewM
             SelectedCameraSlots.CollectionChanged += SelectionChanged;
             SelectedSharedRenderers.CollectionChanged += SelectionChanged;
             SelectedRendererLinks.CollectionChanged += SelectionChanged;
+            SelectedFrameItems.CollectionChanged += SelectionChanged;
+
+            // Keep the Frame tab and the Structure tree in step with the asset
+            Frame.Rebuild();
+            Structure.Rebuild();
+            Asset.PropertyGraph.Changed += AssetChanged;
+            Asset.PropertyGraph.ItemChanged += AssetChanged;
 
             // Make selection scope exclusives
+            ServiceProvider.Get<SelectionService>().RegisterSelectionScope(FindFrameItem, obj => (obj as GraphicsCompositorItemViewModel)?.Id, SelectedFrameItems);
             ServiceProvider.Get<SelectionService>().RegisterSelectionScope(id => RenderStages.FirstOrDefault(x => x.Id == id), obj => (obj as RenderStageViewModel)?.Id, SelectedRenderStages);
             ServiceProvider.Get<SelectionService>().RegisterSelectionScope(id => RenderFeatures.FirstOrDefault(x => x.Id == id), obj => (obj as RenderFeatureViewModel)?.Id, SelectedRenderFeatures);
             ServiceProvider.Get<SelectionService>().RegisterSelectionScope(id => CameraSlots.FirstOrDefault(x => x.Id == id), obj => (obj as GraphicsCompositorCameraSlotsViewModel)?.Id, SelectedCameraSlots);
@@ -206,8 +288,86 @@ namespace Stride.Assets.Presentation.AssetEditors.GraphicsCompositorEditor.ViewM
         private async void SelectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             var selectedItems = ((IEnumerable<object>)sender).OfType<IPropertyProviderViewModel>().ToList();
+
+            var selected = ValueOf(((IEnumerable<object>)sender).FirstOrDefault());
+            if (selected is not null || sender != SelectedFrameItems)
+            {
+                var source = sender == SelectedFrameItems ? frameSelectionSource
+                    : sender == SelectedSharedRenderers || sender == SelectedRendererLinks ? "Graph" : "Lists";
+                Frame.Highlight(selected);
+                SelectionBanner = selected is null ? null : $"Selected in {source}: {Describe(selected)}";
+            }
+
             EditorProperties.UpdateTypeAndName(selectedItems, x => ComputeSelectionName(x, false), x => x.ToString(), ComputeSelectionName(selectedItems.FirstOrDefault(), true));
             await EditorProperties.GenerateSelectionPropertiesAsync(selectedItems);
+        }
+
+        private static object ValueOf(object item) => item switch
+        {
+            RenderFeatureViewModel feature => feature.RenderFeature,
+            RenderStageViewModel stage => stage.RenderStage,
+            GraphicsCompositorCameraSlotsViewModel slot => slot.CameraSlot,
+            SharedRendererBlockViewModel block => block.GetSharedRenderer(),
+            CompositorObjectViewModel value => value.Value,
+            _ => null,
+        };
+
+        private object FindFrameItem(AbsoluteId id)
+        {
+            return RenderFeatures.FirstOrDefault(x => x.Id == id) ?? RenderStages.FirstOrDefault(x => x.Id == id)
+                ?? CameraSlots.FirstOrDefault(x => x.Id == id) ?? (object)objectItems.Values.FirstOrDefault(x => x.Id == id);
+        }
+
+        // One line on where the selection sits in the frame of the shown entry point
+        private string Describe(object selected)
+        {
+            var lanes = Frame.Lanes;
+            var name = CompositorFrameViewModel.NameOf(selected);
+            switch (selected)
+            {
+                case RootRenderFeature feature:
+                {
+                    var stages = lanes.Where(l => l.Chips.Any(c => c.Routed.Feature == feature)).SelectMany(l => l.Step.Stages).Select(s => s.Name).Distinct().ToList();
+                    var where = stages.Count == 0 ? $"draws into no stage the {Frame.Entry} entry runs" : $"draws into {string.Join(", ", stages)}";
+                    var shared = stages.Count > 1 ? "; its sort key orders it in each of them" : "";
+                    return $"{name} · render feature · sort key {feature.SortKey} · {where}{shared}";
+                }
+                case RenderStage stage:
+                {
+                    var stageLanes = lanes.Where(l => l.Step.Stages.Contains(stage)).ToList();
+                    var features = stageLanes.SelectMany(l => l.Chips).Select(c => c.Routed.Feature).Distinct().Count();
+                    var drawnBy = stageLanes.Select(l => CompositorFrameViewModel.NameOf(l.Step.Owner)).Distinct().ToList();
+                    return $"{name} · render stage · fed by {features} feature(s) · " + (drawnBy.Count == 0 ? $"not drawn by the {Frame.Entry} entry" : $"drawn by {string.Join(", ", drawnBy)}");
+                }
+                case SceneCameraSlot slot:
+                {
+                    var setBy = lanes.Where(l => l.Step.Camera.Slot == slot).Select(l => CompositorFrameViewModel.NameOf(l.Step.Camera.SetBy)).Distinct().ToList();
+                    return $"{name} · camera slot · " + (setBy.Count == 0 ? $"not used by the {Frame.Entry} entry" : $"set by {string.Join(", ", setBy)}");
+                }
+                case ISceneRenderer renderer:
+                {
+                    var lane = lanes.FirstOrDefault(l => l.Step.OwnerPath.Contains(renderer));
+                    var path = lane is null ? $"not run by the {Frame.Entry} entry" : string.Join(" › ", lane.Step.OwnerPath.TakeWhile(r => r != renderer).Append(renderer).Select(CompositorFrameViewModel.NameOf));
+                    return $"{name} · renderer · {path}";
+                }
+                default:
+                    return name;
+            }
+        }
+
+        private void AssetChanged(object sender, EventArgs e)
+        {
+            // Many nodes change in one edit; rebuild once
+            if (rebuildPending)
+                return;
+
+            rebuildPending = true;
+            Dispatcher.LowPriorityInvokeAsync(() =>
+            {
+                rebuildPending = false;
+                Frame.Rebuild();
+                Structure.Rebuild();
+            });
         }
 
         private static string ComputeSelectionName(object selectedObject, bool plural)
@@ -224,6 +384,8 @@ namespace Stride.Assets.Presentation.AssetEditors.GraphicsCompositorEditor.ViewM
                 return !plural ? "Render feature" : "render features";
             if (selectedObject is GraphicsCompositorCameraSlotsViewModel)
                 return !plural ? "Camera slot" : "camera slots";
+            if (selectedObject is CompositorObjectViewModel)
+                return !plural ? "Compositor item" : "compositor items";
 
             return null;
         }
@@ -235,6 +397,10 @@ namespace Stride.Assets.Presentation.AssetEditors.GraphicsCompositorEditor.ViewM
             ServiceProvider.Get<SelectionService>().UnregisterSelectionScope(SelectedRenderFeatures);
             ServiceProvider.Get<SelectionService>().UnregisterSelectionScope(SelectedCameraSlots);
             ServiceProvider.Get<SelectionService>().UnregisterSelectionScope(SelectedSharedRenderers);
+            ServiceProvider.Get<SelectionService>().UnregisterSelectionScope(SelectedFrameItems);
+            SelectedFrameItems.CollectionChanged -= SelectionChanged;
+            Asset.PropertyGraph.Changed -= AssetChanged;
+            Asset.PropertyGraph.ItemChanged -= AssetChanged;
 
             SelectedRenderStages.CollectionChanged -= SelectionChanged;
             SelectedRenderFeatures.CollectionChanged -= SelectionChanged;

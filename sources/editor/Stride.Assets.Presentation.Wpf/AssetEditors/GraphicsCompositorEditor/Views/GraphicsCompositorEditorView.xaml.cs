@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using Stride.Core.Assets.Editor.Services;
 using Stride.Core.Assets.Editor.ViewModel;
@@ -45,6 +46,12 @@ namespace Stride.Assets.Presentation.AssetEditors.GraphicsCompositorEditor.Views
 
             editorInitializationNotifier.SetResult();
             return true;
+        }
+
+        private void StructureTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (e.NewValue is StructureNodeViewModel { Value: not null } node)
+                node.Editor.SelectFromFrame(node.Value, "Structure");
         }
 
         private void ZoomControl_MouseUp(object sender, MouseButtonEventArgs e)

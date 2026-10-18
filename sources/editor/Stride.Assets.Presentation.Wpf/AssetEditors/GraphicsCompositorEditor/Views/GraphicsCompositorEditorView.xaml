@@ -185,7 +185,34 @@
       <ColumnDefinition Width="5"/>
       <ColumnDefinition Width="3*"/>
     </Grid.ColumnDefinitions>
-    <Grid Grid.Column="0">
+    <TabControl Grid.Column="0">
+      <TabItem Header="{sd:Localize Structure, Context=Tab}">
+        <TreeView ItemsSource="{Binding Structure.Roots}" SelectedItemChanged="StructureTree_SelectedItemChanged" Background="Transparent" BorderThickness="0">
+          <TreeView.ItemContainerStyle>
+            <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+              <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+            </Style>
+          </TreeView.ItemContainerStyle>
+          <TreeView.ItemTemplate>
+            <HierarchicalDataTemplate DataType="vm:StructureNodeViewModel" ItemsSource="{Binding Children}">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding Detail}" Foreground="#9A9EA8" Margin="8,0,0,0"/>
+                <Border x:Name="Marker" Margin="8,0,0,0" Padding="5,0" CornerRadius="3" Background="#3A3D44" Visibility="{Binding Marker, Converter={sd:Chained {sd:ObjectToBool}, {sd:VisibleOrCollapsed}}}">
+                  <TextBlock Text="{Binding Marker}" FontSize="10" Foreground="#C9CCD4"/>
+                </Border>
+              </StackPanel>
+              <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsAddedHere}" Value="True">
+                  <Setter TargetName="Marker" Property="Background" Value="#1D3352"/>
+                </DataTrigger>
+              </DataTemplate.Triggers>
+            </HierarchicalDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+      </TabItem>
+      <TabItem Header="{sd:Localize Lists, Context=Tab}">
+    <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="5"/>
@@ -315,8 +342,12 @@
         </sd:EditableContentListBox>
       </DockPanel>
     </Grid>
+      </TabItem>
+    </TabControl>
     <GridSplitter Grid.Column="1" Width="5" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext"/>
-    <graphx:ZoomControl x:Name="ZoomControl" Grid.Column="2" Background="#49494E" Zoom="1.0" ZoomSensitivity="10.0" IsAnimationEnabled="False" RenderOptions.BitmapScalingMode="HighQuality" ContextMenu="{StaticResource EditorViewContextMenu}">
+    <TabControl Grid.Column="2">
+      <TabItem Header="{sd:Localize Graph, Context=Tab}">
+    <graphx:ZoomControl x:Name="ZoomControl" Background="#49494E" Zoom="1.0" ZoomSensitivity="10.0" IsAnimationEnabled="False" RenderOptions.BitmapScalingMode="HighQuality" ContextMenu="{StaticResource EditorViewContextMenu}">
       <i:Interaction.Behaviors>
         <sd:FrameworkElementDragDropBehavior DragVisualTemplate="{StaticResource DragVisualTemplate}" CanDrag="False" />
       </i:Interaction.Behaviors>
@@ -334,6 +365,139 @@
         <KeyBinding Key="Delete" Command="{Binding DeleteSelectionCommand}"/>
       </graphx:ZoomControl.InputBindings>
     </graphx:ZoomControl>
+      </TabItem>
+      <TabItem Header="{sd:Localize Frame, Context=Tab}">
+        <DockPanel Background="#1B1C20">
+          <Border DockPanel.Dock="Top" Padding="10,6" Background="#1A2638" BorderBrush="#3F5F8A" BorderThickness="0,0,0,1"
+                  Visibility="{Binding SelectionBanner, Converter={sd:Chained {sd:ObjectToBool}, {sd:VisibleOrCollapsed}}}">
+            <TextBlock Text="{Binding SelectionBanner}" Foreground="#CFE2FF" TextWrapping="Wrap"/>
+          </Border>
+          <DockPanel DockPanel.Dock="Top" Margin="10,8">
+            <TextBlock Text="{sd:Localize Entry point:}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+            <ComboBox ItemsSource="{Binding Frame.Entries}" SelectedItem="{Binding Frame.Entry}" MinWidth="110"/>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+              <Rectangle Width="10" Height="10" Fill="#7E62B8" Margin="0,0,4,0"/>
+              <TextBlock Text="{sd:Localize Shadow atlas}" Foreground="#9A9EA8" Margin="0,0,10,0"/>
+              <Rectangle Width="10" Height="10" Fill="#2F8F83" Margin="0,0,4,0"/>
+              <TextBlock Text="{sd:Localize Depth}" Foreground="#9A9EA8" Margin="0,0,10,0"/>
+              <Rectangle Width="10" Height="10" Fill="#A8742F" Margin="0,0,4,0"/>
+              <TextBlock Text="{sd:Localize Colour}" Foreground="#9A9EA8"/>
+            </StackPanel>
+            <TextBlock Text="{Binding Frame.EntryNote}" Foreground="#9A9EA8" VerticalAlignment="Center" Margin="10,0" TextTrimming="CharacterEllipsis"/>
+          </DockPanel>
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Frame.Lanes}" Margin="10,0,10,10">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:FrameLaneViewModel">
+                  <Grid x:Name="Lane">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="Card" Margin="0,3,10,3" Padding="10,8" CornerRadius="6" Background="#232429" BorderBrush="#34363D" BorderThickness="1" Cursor="Hand">
+                      <Border.InputBindings>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding SelectCommand}"/>
+                      </Border.InputBindings>
+                      <StackPanel>
+                        <DockPanel>
+                          <TextBlock DockPanel.Dock="Right" Text="{Binding SettingsHint}" Foreground="#9CC4FF" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                          <TextBlock Text="{Binding Title}" FontWeight="Bold" ToolTip="{Binding Explanation}"/>
+                        </DockPanel>
+                        <TextBlock Text="{Binding Detail}" Foreground="#9A9EA8" FontSize="11" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Condition}" Foreground="#C9A46A" FontSize="11" FontStyle="Italic" TextWrapping="Wrap"
+                                   Visibility="{Binding Condition, Converter={sd:Chained {sd:ObjectToBool}, {sd:VisibleOrCollapsed}}}"/>
+                        <ItemsControl ItemsSource="{Binding Chips}" Margin="0,4,0,0">
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <WrapPanel/>
+                            </ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:FrameChipViewModel">
+                              <Border x:Name="Chip" Margin="0,2,6,2" Padding="7,2" CornerRadius="4" Background="#2D2F37" BorderBrush="#44474F" BorderThickness="1" Cursor="Hand"
+                                      ToolTip="{Binding Condition}">
+                                <Border.InputBindings>
+                                  <MouseBinding Gesture="LeftClick" Command="{Binding SelectCommand}"/>
+                                </Border.InputBindings>
+                                <StackPanel Orientation="Horizontal">
+                                  <TextBlock Text="{Binding SortKey}" FontFamily="Consolas" Foreground="#9A9EA8" Margin="0,0,6,0"/>
+                                  <TextBlock Text="{Binding Name}"/>
+                                  <TextBlock Text="{Binding Marker, StringFormat=' · {0}'}" Foreground="#9A9EA8" FontSize="11" VerticalAlignment="Center"
+                                             Visibility="{Binding Marker, Converter={sd:Chained {sd:ObjectToBool}, {sd:VisibleOrCollapsed}}}"/>
+                                </StackPanel>
+                              </Border>
+                              <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsAddedHere}" Value="True">
+                                  <Setter TargetName="Chip" Property="Background" Value="#1D3352"/>
+                                  <Setter TargetName="Chip" Property="BorderBrush" Value="#3F5F8A"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                  <Setter TargetName="Chip" Property="BorderBrush" Value="#5AA2FF"/>
+                                  <Setter TargetName="Chip" Property="BorderThickness" Value="2"/>
+                                  <Setter TargetName="Chip" Property="Background" Value="#24456E"/>
+                                </DataTrigger>
+                              </DataTemplate.Triggers>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </Border>
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding ResourceCells}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:FrameResourceCell">
+                          <Border x:Name="Cell" Width="18" Margin="3,0" Background="Transparent" ToolTip="{Binding ToolTip}"/>
+                          <DataTemplate.Triggers>
+                            <MultiDataTrigger>
+                              <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsActive}" Value="True"/>
+                                <Condition Binding="{Binding Kind}" Value="ShadowAtlas"/>
+                              </MultiDataTrigger.Conditions>
+                              <Setter TargetName="Cell" Property="Background" Value="#7E62B8"/>
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                              <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsActive}" Value="True"/>
+                                <Condition Binding="{Binding Kind}" Value="Depth"/>
+                              </MultiDataTrigger.Conditions>
+                              <Setter TargetName="Cell" Property="Background" Value="#2F8F83"/>
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                              <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsActive}" Value="True"/>
+                                <Condition Binding="{Binding Kind}" Value="Colour"/>
+                              </MultiDataTrigger.Conditions>
+                              <Setter TargetName="Cell" Property="Background" Value="#A8742F"/>
+                            </MultiDataTrigger>
+                          </DataTemplate.Triggers>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Grid>
+                  <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                      <Setter TargetName="Card" Property="BorderBrush" Value="#5AA2FF"/>
+                      <Setter TargetName="Card" Property="BorderThickness" Value="2"/>
+                      <Setter TargetName="Card" Property="Background" Value="#1C2431"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsDimmed}" Value="True">
+                      <Setter TargetName="Card" Property="Opacity" Value="0.45"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsUnknown}" Value="True">
+                      <Setter TargetName="Card" Property="BorderBrush" Value="#6B5A3A"/>
+                    </DataTrigger>
+                  </DataTemplate.Triggers>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
   </Grid>
 </UserControl>
 

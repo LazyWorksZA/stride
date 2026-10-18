@@ -76,7 +76,10 @@ public static class CompositorFrameBuilder
         return routes;
     }
 
-    private static IEnumerable<(RenderStage Stage, string Condition)> StagesOf(RenderStageSelector selector)
+    /// <summary>
+    /// The stages a selector can send render objects to, and which objects it sends to each.
+    /// </summary>
+    public static IEnumerable<(RenderStage Stage, string Condition)> StagesOf(RenderStageSelector selector)
     {
         switch (selector)
         {
