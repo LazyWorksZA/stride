@@ -27,6 +27,8 @@ namespace Stride.Rendering
         
         private static readonly ProfilingKey GetOrCreateObjectNodeKey = new ProfilingKey($"{nameof(RootRenderFeature)}.GetOrCreateObjectNode");
 
+        private byte? sortKey;
+
         // storage for properties (struct of arrays)
         public RenderDataHolder RenderData;
 
@@ -36,7 +38,21 @@ namespace Stride.Rendering
         /// <summary>
         /// Sort key used during rendering.
         /// </summary>
-        public byte SortKey { get; protected set; } = 128;
+        /// <remarks>
+        /// Every stock <see cref="SortMode"/> puts this key in the highest bits of each render node's sort key,
+        /// so within a render stage, features with a lower key draw first. Defaults to <see cref="DefaultSortKey"/>.
+        /// </remarks>
+        [DataMember]
+        public byte SortKey
+        {
+            get => sortKey ?? DefaultSortKey;
+            set => sortKey = value;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="SortKey"/> this type of feature uses unless an asset or code sets another one.
+        /// </summary>
+        protected virtual byte DefaultSortKey => 128;
 
         /// <summary>
         /// List of <see cref="RenderObject"/> initialized with this root render feature.
@@ -71,6 +87,9 @@ namespace Stride.Rendering
         {
             RenderData.Initialize(ComputeDataArrayExpectedSize);
         }
+
+        // Protected rather than private: the serializer looks this up on the derived type, and reflection doesn't return a base type's private members.
+        protected bool ShouldSerializeSortKey() => SortKey != DefaultSortKey;
 
         /// <inheritdoc/>
         public override void Unload()

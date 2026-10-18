@@ -20,11 +20,8 @@ namespace Stride.Rendering.Background
 
         public override Type SupportedRenderObjectType => typeof(RenderBackground);
 
-        public BackgroundRenderFeature()
-        {
-            // Background should render after most objects (to take advantage of early z depth test)
-            SortKey = 192;
-        }
+        // Background should render after most objects (to take advantage of early z depth test)
+        protected override byte DefaultSortKey => 192;
 
         public override void Prepare(RenderDrawContext context)
         {

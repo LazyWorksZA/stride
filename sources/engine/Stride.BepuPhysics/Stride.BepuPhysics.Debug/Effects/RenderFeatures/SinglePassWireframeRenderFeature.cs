@@ -27,10 +27,7 @@ public class SinglePassWireframeRenderFeature : RootRenderFeature
 
     public override Type SupportedRenderObjectType => typeof(WireFrameRenderObject);
 
-    public SinglePassWireframeRenderFeature()
-    {
-        SortKey = 254; // Below LineRenderFeature, so contacts are drawn over the wireframes
-    }
+    protected override byte DefaultSortKey => 254; // Below LineRenderFeature, so contacts are drawn over the wireframes
 
     protected override void InitializeCore()
     {

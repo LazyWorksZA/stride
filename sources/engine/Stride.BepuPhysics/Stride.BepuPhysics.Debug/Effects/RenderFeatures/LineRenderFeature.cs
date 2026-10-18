@@ -28,10 +28,7 @@ public class LineRenderFeature : RootRenderFeature
     /// <inheritdoc/>
     public override Type SupportedRenderObjectType => typeof(LineRenderObject);
 
-    public LineRenderFeature()
-    {
-        SortKey = 255;
-    }
+    protected override byte DefaultSortKey => 255;
 
     protected override void InitializeCore()
     {
