@@ -1,49 +1,84 @@
-// Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
+// Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
-using Stride.Core.Assets.Editor.Components.TemplateDescriptions.ViewModels;
-using Stride.Core.Assets.Editor.ViewModel;
+#nullable disable
+
+using Stride.Core.Assets.Editor.Components.TemplateDescriptions;
 using Stride.Core.Assets.Templates;
+using Stride.Core.Extensions;
+using Stride.Core.Assets.Presentation.ViewModels;
 
-namespace Stride.Core.Assets.Editor.Components.AddAssets
+namespace Stride.Core.Assets.Editor.Components.AddAssets;
+
+/// <summary>
+/// The asset templates of a session (see <see cref="ISessionViewModel.FindTemplates"/>), grouped as their descriptions say: the
+/// list of the Add asset button and of the Add asset dialog.
+/// </summary>
+public sealed class AddAssetTemplateCollectionViewModel : AddItemTemplateCollectionViewModel
 {
-    public class AddAssetTemplateCollectionViewModel : AddItemTemplateCollectionViewModel
+    private readonly ISessionViewModel session;
+    private DirectoryBaseViewModel? currentDirectory;
+
+    public AddAssetTemplateCollectionViewModel(ISessionViewModel session)
+        : base(session.SafeArgument(nameof(session)).ServiceProvider)
     {
-        public AddAssetTemplateCollectionViewModel(SessionViewModel session)
-            : base(session.ServiceProvider)
+        this.session = session;
+        Refresh();
+    }
+
+    /// <summary>
+    /// The folder the asset is added to, which the proposed name is unique in (see <see cref="TargetDirectory"/>).
+    /// </summary>
+    public DirectoryBaseViewModel? CurrentDirectory
+    {
+        get => currentDirectory;
+        set => SetValue(ref currentDirectory, value);
+    }
+
+    /// <summary>
+    /// The folder the selected template creates its asset in: <see cref="CurrentDirectory"/>, or the first folder that accepts
+    /// the asset type when that one does not.
+    /// </summary>
+    public DirectoryBaseViewModel? TargetDirectory { get; private set; }
+
+    /// <summary>
+    /// Rebuilds the list from the session's packages: a package added since (a plugin joining the solution)
+    /// brings its own asset templates.
+    /// </summary>
+    public void Refresh()
+    {
+        RootGroup.Clear();
+        foreach (var template in session.FindTemplates(TemplateScope.Asset))
         {
-            foreach (TemplateDescription template in session.FindTemplates(TemplateScope.Asset))
+            // A package can be in the session while the assembly defining its asset type is not loaded
+            if (template is TemplateAssetDescription assetTemplate && assetTemplate.FindAssetType() is null)
+                continue;
+
+            var group = ProcessGroup(RootGroup, template.Group);
+            if (group is not null)
             {
-                var group = ProcessGroup(RootGroup, template.Group);
-                if (group != null)
-                {
-                    var viewModel = new TemplateDescriptionViewModel(session.ServiceProvider, template);
-                    group.Templates.Add(viewModel);
-                }
+                group.Templates.Add(new TemplateDescriptionViewModel(session.ServiceProvider, template));
             }
-
-            SelectedGroup = RootGroup;
         }
 
-        public DirectoryBaseViewModel CurrentDirectory { get; set; }
+        // The selected template belonged to the old groups
+        SelectedTemplate = null;
+        SelectedGroup = RootGroup;
+        UpdateTemplateList();
+    }
 
-        public DirectoryBaseViewModel TargetDirectory { get; private set; }
+    /// <inheritdoc/>
+    protected override string? UpdateNameFromSelectedTemplate()
+    {
+        if (SelectedTemplate?.GetTemplate() is not TemplateAssetDescription { RequireName: true } selectedTemplate || CurrentDirectory is null)
+            return null;
 
-        protected override string UpdateNameFromSelectedTemplate()
-        {
-            var selectedTemplate = SelectedTemplate?.GetTemplate() as TemplateAssetDescription;
-            if (selectedTemplate == null || !selectedTemplate.RequireName)
-                return null;
+        // If the mount point of the current folder does not support this type of asset, try to select the first mount point that support it.
+        var assetType = selectedTemplate.GetAssetType();
+        TargetDirectory = AssetViewModel.FindValidCreationLocation(assetType, CurrentDirectory);
+        if (TargetDirectory is null)
+            return null;
 
-            // If the mount point of the current folder does not support this type of asset, try to select the first mount point that support it.
-            var assetType = selectedTemplate.GetAssetType();
-            TargetDirectory = AssetViewModel.FindValidCreationLocation(assetType, CurrentDirectory);
-            if (TargetDirectory == null)
-                return null;
-
-            var baseName = selectedTemplate.DefaultOutputName ?? selectedTemplate.AssetTypeName;
-            var name = NamingHelper.ComputeNewName(baseName, TargetDirectory.Assets, x => x.Name, "{0}{1}");
-
-            return name;
-        }
+        var baseName = selectedTemplate.DefaultOutputName ?? selectedTemplate.AssetTypeName;
+        return NamingHelper.ComputeNewName(baseName, TargetDirectory.Assets, x => x.Name, "{0}{1}");
     }
 }

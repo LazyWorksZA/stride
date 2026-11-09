@@ -1,66 +1,70 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
-using System;
-using System.Threading.Tasks;
+#nullable disable
+
 using Stride.Core.Extensions;
 using Stride.Core.Presentation.Commands;
 using Stride.Core.Presentation.ViewModels;
 
-namespace Stride.Core.Assets.Editor.Components.FixReferences
+namespace Stride.Core.Assets.Editor.Components.FixReferences;
+
+/// <summary>
+/// A reference to a deleted object, in one of the objects that reference it, and what to do with it: replace it with
+/// <see cref="ReplacementObject"/>, or clear it.
+/// </summary>
+/// <typeparam name="T">The type of objects that are being deleted.</typeparam>
+public abstract class ReferenceReplacementViewModel<T> : DispatcherViewModel where T : ViewModelBase
 {
-    public abstract class ReferenceReplacementViewModel<T> : DispatcherViewModel where T : ViewModelBase
+    private readonly FixReferencesViewModel<T> fixReferences;
+    private readonly Type propertyType;
+    private T? replacementObject;
+    private bool dontFixReference;
+
+    protected ReferenceReplacementViewModel(FixReferencesViewModel<T> fixReferences, T objectToFix, T referencer, Type propertyType)
+        : base(fixReferences.SafeArgument(nameof(fixReferences)).ServiceProvider)
     {
-        private readonly FixReferencesViewModel<T> fixReferences;
-        private readonly Type propertyType;
-        private T replacementObject;
-        private bool dontFixReference;
+        this.fixReferences = fixReferences;
+        this.propertyType = propertyType;
+        Referencer = referencer;
+        ObjectToFix = objectToFix;
+        PickupReplacementObjectCommand = new AnonymousTaskCommand(fixReferences.ServiceProvider, PickupReplacementObject);
+    }
 
-        protected ReferenceReplacementViewModel(FixReferencesViewModel<T> fixReferences, T objectToFix, T referencer, Type propertyType)
-            : base(fixReferences.SafeArgument(nameof(fixReferences)).ServiceProvider)
+    public T ObjectToFix { get; }
+
+    public T Referencer { get; }
+
+    public T? ReplacementObject { get => replacementObject; set => SetValue(ref replacementObject, value, fixReferences.UpdateCommands); }
+
+    public bool DontFixReference { get => dontFixReference; set => SetValue(ref dontFixReference, value, fixReferences.UpdateCommands); }
+
+    public ICommandBase PickupReplacementObjectCommand { get; }
+
+    public void FixReference()
+    {
+        if (DontFixReference)
         {
-            this.fixReferences = fixReferences;
-            this.propertyType = propertyType;
-            Referencer = referencer;
-            ObjectToFix = objectToFix;
-            PickupReplacementObjectCommand = new AnonymousTaskCommand(fixReferences.ServiceProvider, PickupReplacementObject);
+            ClearReference();
         }
-
-        public T ObjectToFix { get; }
-
-        public T Referencer { get; }
-
-        public T ReplacementObject { get { return replacementObject; } set { SetValue(ref replacementObject, value, () => fixReferences.UpdateCommands()); } }
-
-        public bool DontFixReference { get { return dontFixReference; } set { SetValue(ref dontFixReference, value, () => fixReferences.UpdateCommands()); } }
-
-        public ICommandBase PickupReplacementObjectCommand { get; }
-
-        public void FixReference()
+        else
         {
-            if (DontFixReference)
-            {
-                ClearReference();
-            }
-            else
-            {
-                if (ReplacementObject == null)
-                    throw new InvalidOperationException("The replacement asset can't be null when fixing a reference");
+            if (ReplacementObject == null)
+                throw new InvalidOperationException("The replacement asset can't be null when fixing a reference");
 
-                ReplaceReference();
-            }
+            ReplaceReference();
         }
+    }
 
-        public abstract void ClearReference();
+    public abstract void ClearReference();
 
-        protected abstract void ReplaceReference();
+    protected abstract void ReplaceReference();
 
-        protected async Task PickupReplacementObject()
+    protected async Task PickupReplacementObject()
+    {
+        var replacement = await fixReferences.PickupObject(ObjectToFix, propertyType);
+        if (replacement != null)
         {
-            var replacement = await fixReferences.PickupObject(ObjectToFix, propertyType);
-            if (replacement != null)
-            {
-                ReplacementObject = replacement;
-            }
+            ReplacementObject = replacement;
         }
     }
 }

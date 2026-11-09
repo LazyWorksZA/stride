@@ -29,6 +29,7 @@ namespace Stride.Core.Presentation.Windows
         private static IntPtr hook;
         private static Dispatcher dispatcher;
         private static bool initialized;
+        private static bool mainWindowBlocked;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowManager"/> class.
@@ -63,12 +64,39 @@ namespace Stride.Core.Presentation.Windows
         /// <summary>
         /// Gets the collection of currently visible modal windows.
         /// </summary>
-        public static IReadOnlyList<WindowInfo> ModalWindows => ModalWindowsList;
+        /// <remarks>
+        /// Windows destroyed without a hide event (Wine does not raise <c>EVENT_OBJECT_HIDE</c> for them) are dropped when this is read from the dispatcher thread.
+        /// </remarks>
+        public static IReadOnlyList<WindowInfo> ModalWindows
+        {
+            get
+            {
+                PruneStale();
+                return ModalWindowsList;
+            }
+        }
 
         /// <summary>
         /// Gets the collection of currently visible blocking windows.
         /// </summary>
-        public static IReadOnlyList<WindowInfo> BlockingWindows => BlockingWindowsList;
+        /// <remarks>
+        /// Windows destroyed without a hide event (Wine does not raise <c>EVENT_OBJECT_HIDE</c> for them) are dropped on read.
+        /// </remarks>
+        public static IReadOnlyList<WindowInfo> BlockingWindows
+        {
+            get
+            {
+                PruneStale();
+                return BlockingWindowsList;
+            }
+        }
+
+        /// <summary>
+        /// Raised when the last blocking or modal window closes, so the main window can be used again.
+        /// It is raised asynchronously, after the window event that closed it has been processed, so a
+        /// handler can show a window of its own.
+        /// </summary>
+        public static event EventHandler MainWindowUnblocked;
 
         /// <inheritdoc/>
         public void Dispose()
@@ -83,6 +111,7 @@ namespace Stride.Core.Presentation.Windows
             AllWindowsList.Clear();
             ModalWindowsList.Clear();
             BlockingWindowsList.Clear();
+            mainWindowBlocked = false;
 
             Logger.Info($"{nameof(WindowManager)} disposed");
             initialized = false;
@@ -178,7 +207,7 @@ namespace Stride.Core.Presentation.Windows
 
         private static void ActivateMainWindow()
         {
-            if (MainWindow != null && MainWindow.Hwnd != IntPtr.Zero)
+            if (MainWindow != null && MainWindow.IsShown && MainWindow.Hwnd != IntPtr.Zero)
                 NativeHelper.SetActiveWindow(MainWindow.Hwnd);
         }
 
@@ -202,8 +231,13 @@ namespace Stride.Core.Presentation.Windows
                 SetDisabled(blockingWindow, modalPresent);
 
             // The main window is disabled while any blocking or modal window is up.
+            var blocked = modalPresent || BlockingWindowsList.Count > 0;
             if (MainWindow != null && MainWindow.IsShown)
-                SetDisabled(MainWindow, modalPresent || BlockingWindowsList.Count > 0);
+                SetDisabled(MainWindow, blocked);
+
+            if (mainWindowBlocked && !blocked)
+                dispatcher.InvokeAsync(() => MainWindowUnblocked?.Invoke(null, EventArgs.Empty));
+            mainWindowBlocked = blocked;
         }
 
         private static void SetDisabled(WindowInfo windowInfo, bool disabled)
@@ -217,13 +251,23 @@ namespace Stride.Core.Presentation.Windows
             }
         }
 
+        private static void PruneStale()
+        {
+            if (dispatcher == null || !dispatcher.CheckAccess())
+                return;
+            if (ModalWindowsList.Any(IsStale) || BlockingWindowsList.Any(IsStale))
+                RefreshDisabledStates();
+        }
+
+        private static bool IsStale(WindowInfo windowInfo) => windowInfo.IsShown && (windowInfo.Hwnd == IntPtr.Zero || !NativeHelper.IsWindow(windowInfo.Hwnd));
+
         private static void PruneClosed(List<WindowInfo> list)
         {
             for (var i = list.Count - 1; i >= 0; i--)
             {
                 var windowInfo = list[i];
                 // Only prune windows we actually saw shown; a not-yet-shown window has no hwnd yet.
-                if (windowInfo.IsShown && (windowInfo.Hwnd == IntPtr.Zero || !NativeHelper.IsWindow(windowInfo.Hwnd)))
+                if (IsStale(windowInfo))
                 {
                     Logger.Verbose($"Pruning destroyed window ({windowInfo.Hwnd}) from tracking lists.");
                     list.RemoveAt(i);
@@ -366,6 +410,14 @@ namespace Stride.Core.Presentation.Windows
             }
 
             windowInfo.IsShown = false;
+
+            // A hidden main window is not closed: keep it registered until its window is destroyed.
+            if (windowInfo == MainWindow && NativeHelper.IsWindow(hwnd))
+            {
+                Logger.Info($"Main window ({hwnd}) hidden.");
+                return;
+            }
+
             AllWindowsList.Remove(windowInfo);
 
             if (MainWindow != null && MainWindow.Equals(windowInfo))

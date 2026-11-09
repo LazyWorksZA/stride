@@ -9,6 +9,7 @@ using Stride.Core.Assets;
 using Stride.Core.Diagnostics;
 using Stride.Core.IO;
 using Stride.Samples.Generator;
+using Xunit.Abstractions;
 
 namespace Stride.Packaging.Tests;
 
@@ -83,6 +84,41 @@ internal static class TestEnvironment
         }
     }
 
+    /// <summary>The temp folder that holds one tree per case.</summary>
+    public static string CasesRoot => Path.Combine(Path.GetTempPath(), "stride-packaging-tests");
+
+    /// <summary>The case tree, directly under <see cref="CasesRoot"/>, that holds <paramref name="path"/>.</summary>
+    public static string CaseDirectory(string path)
+    {
+        var relative = Path.GetRelativePath(CasesRoot, Path.GetFullPath(path));
+        var caseName = relative.Split(Path.DirectorySeparatorChar)[0];
+        if (Path.IsPathRooted(relative) || caseName is "." or "..")
+            throw new ArgumentException($"[{path}] is not in a case tree under [{CasesRoot}].", nameof(path));
+        return Path.Combine(CasesRoot, caseName);
+    }
+
+    /// <summary>
+    /// Deletes a case's temp tree once the case is done: each holds its own NuGet restore (well over 1 GB), so
+    /// a full run would fill a CI runner's disk. Set STRIDE_KEEP_TEST_DIRS to keep them for a look after the run.
+    /// </summary>
+    public static void DeleteCaseDirectory(string caseDir, ITestOutputHelper? output = null)
+    {
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STRIDE_KEEP_TEST_DIRS")) || !Directory.Exists(caseDir))
+            return;
+        try
+        {
+            // Extracted packages can hold read-only files
+            foreach (var file in Directory.EnumerateFiles(caseDir, "*", SearchOption.AllDirectories))
+                File.SetAttributes(file, FileAttributes.Normal);
+            Directory.Delete(caseDir, recursive: true);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // A file still in use (a build server): left for the OS temp cleanup
+            output?.WriteLine($"Could not delete [{caseDir}]: {e.Message}");
+        }
+    }
+
     private static bool msbuildReady;
 
     /// <summary>Generate a sample from its template GUID into a fresh temp directory; returns the .slnx path.</summary>
@@ -95,7 +131,7 @@ internal static class TestEnvironment
             msbuildReady = true;
         }
 
-        var outputDir = Path.Combine(Path.GetTempPath(), "stride-packaging-tests", sampleName);
+        var outputDir = Path.Combine(CasesRoot, sampleName);
         var logger = new LoggerResult();
         var session = SampleGenerator.Generate(new UDirectory(outputDir), templateGuid, sampleName, logger);
         return session.SolutionPath.ToOSPath();

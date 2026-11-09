@@ -1,39 +1,43 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
-using System.Linq;
-using Stride.Core.Assets.Editor.ViewModel;
+#nullable disable
+
 using Stride.Core.IO;
+using Stride.Core.Assets.Presentation.ViewModels;
 
-namespace Stride.Core.Assets.Editor.Quantum.NodePresenters.Commands
+namespace Stride.Core.Assets.Editor.Quantum.NodePresenters.Commands;
+
+/// <summary>
+/// Gives the folder of the selected asset as the initial directory of a file or folder picker, or a path relative to it.
+/// </summary>
+internal sealed class AssetInitialDirectoryProvider : IInitialDirectoryProvider
 {
-    class AssetInitialDirectoryProvider : IInitialDirectoryProvider
+    private readonly ISessionViewModel session;
+
+    public AssetInitialDirectoryProvider(ISessionViewModel session)
     {
-        private readonly SessionViewModel session;
+        this.session = session;
+    }
 
-        public AssetInitialDirectoryProvider(SessionViewModel session)
+    public UDirectory? GetInitialDirectory(UDirectory? currentPath)
+    {
+        if (session != null && session.ActiveAssetView.SelectedAssets.Count == 1 && currentPath != null)
         {
-            this.session = session;
-        }
-
-        public UDirectory GetInitialDirectory(UDirectory currentPath)
-        {
-            if (session != null && session.ActiveAssetView.SelectedAssets.Count == 1 && session.ActiveAssetView.SelectedAssetsPackage != null && currentPath != null)
+            var asset = session.ActiveAssetView.SelectedAssets.First();
+            var projectPath = asset.Directory.Package.PackagePath;
+            if (projectPath != null)
             {
-                var asset = session.ActiveAssetView.SelectedAssets.First();
-                var projectPath = session.ActiveAssetView.SelectedAssetsPackage.PackagePath;
-                if (projectPath != null)
-                {
-                    var assetFullPath = asset.AssetItem.FullPath;
+                // The file of the asset, in the asset folder of its package (its URL alone misses that folder)
+                var assetFullPath = asset.AssetItem.FullPath;
 
-                    if (string.IsNullOrWhiteSpace(currentPath))
-                    {
-                        return assetFullPath.GetFullDirectory();
-                    }
-                    var defaultPath = UPath.Combine(assetFullPath.GetFullDirectory(), currentPath);
-                    return defaultPath.GetFullDirectory();
+                if (string.IsNullOrWhiteSpace(currentPath))
+                {
+                    return assetFullPath.GetFullDirectory();
                 }
+                var defaultPath = UPath.Combine(assetFullPath.GetFullDirectory(), currentPath);
+                return defaultPath.GetFullDirectory();
             }
-            return currentPath;
         }
+        return currentPath;
     }
 }

@@ -1,16 +1,18 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 using System;
 using System.Collections.Generic;
 using Stride.Core.Assets;
-using Stride.Core.Assets.Editor.ViewModel;
 using Stride.Core.Annotations;
 using Stride.Core.Mathematics;
 using Stride.Assets.Entities;
 using Stride.Engine;
+using Stride.Core.Assets.Presentation.ViewModels;
 
 namespace Stride.Assets.Presentation.AssetEditors.EntityHierarchyEditor.ViewModels
 {
+    [Stride.Core.Reflection.AssemblyScan]
     public interface IAddAssetPolicy
     {
         /// <summary>
@@ -32,7 +34,7 @@ namespace Stride.Assets.Presentation.AssetEditors.EntityHierarchyEditor.ViewMode
         /// <param name="messageArgs">Optional arguments for the message.</param>
         /// <returns><c>true</c> if the provided <paramref name="asset"/> can be added or inserted; otherwise, <c>false</c>.</returns>
         /// <remarks>This method is not called if <see cref="Accept"/> returns <c>false</c> for the corresponding asset type.</remarks>
-        bool CanAddOrInsert([NotNull] EntityHierarchyItemViewModel parent, [NotNull] AssetViewModel asset, AddChildModifiers modifier, int index, [NotNull] out string message, [NotNull] params object[] messageArgs);
+        bool CanAddOrInsert([NotNull] IEntityHierarchyItemViewModel parent, [NotNull] AssetViewModel asset, AddChildModifiers modifier, int index, [NotNull] out string message, [NotNull] params object[] messageArgs);
     }
 
     public interface ICreateComponentPolicy : IAddAssetPolicy
@@ -45,19 +47,19 @@ namespace Stride.Assets.Presentation.AssetEditors.EntityHierarchyEditor.ViewMode
         /// <returns>The component to add or insert to the scene; or <c>null</c> if it could not be created.</returns>
         /// <remarks>This method is not called if <see cref="IAddAssetPolicy.CanAddOrInsert"/> returns <c>false</c> for the provided <paramref name="asset"/>.</remarks>
         [CanBeNull]
-        EntityComponent CreateComponentFromAsset([NotNull] EntityHierarchyItemViewModel parent, [NotNull] AssetViewModel asset);
+        EntityComponent CreateComponentFromAsset([NotNull] IEntityHierarchyItemViewModel parent, [NotNull] AssetViewModel asset);
     }
 
     public interface ICreateEntitiesPolicy : IAddAssetPolicy
     {
         /// <remarks>This method is not called if <see cref="IAddAssetPolicy.CanAddOrInsert"/> returns <c>false</c> for the provided <paramref name="asset"/>.</remarks>
         [CanBeNull]
-        AssetCompositeHierarchyData<EntityDesign, Entity> CreateEntitiesFromAsset([NotNull] EntityHierarchyItemViewModel parent, [NotNull] AssetViewModel asset);
+        AssetCompositeHierarchyData<EntityDesign, Entity> CreateEntitiesFromAsset([NotNull] IEntityHierarchyItemViewModel parent, [NotNull] AssetViewModel asset);
     }
 
     public interface ICustomPolicy : IAddAssetPolicy
     {
         /// <remarks>This method is not called if <see cref="IAddAssetPolicy.CanAddOrInsert"/> returns <c>false</c> for the provided <paramref name="assets"/>.</remarks>
-        void ApplyPolicy([NotNull] EntityHierarchyItemViewModel parent, [ItemNotNull, NotNull] IEnumerable<AssetViewModel> assets, int index, Vector3 position);
+        void ApplyPolicy([NotNull] IEntityHierarchyItemViewModel parent, [ItemNotNull, NotNull] IEnumerable<AssetViewModel> assets, int index, Vector3 position);
     }
 }

@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 
 using System;
 using System.IO;
@@ -60,7 +61,8 @@ namespace Stride.Editor.Thumbnails
         /// <param name="changed">A boolean indicating whether the thumbnal has changed since the last generation.</param>
         /// <param name="thumbnailStream">A stream to the thumbnail image.</param>
         /// <param name="thumbnailHash"></param>
-        internal void NotifyThumbnailBuilt(AssetItem assetItem, ThumbnailBuildResult result, bool changed, Stream thumbnailStream, ObjectId thumbnailHash)
+        /// <param name="buildLog">The log of the thumbnail build.</param>
+        internal void NotifyThumbnailBuilt(AssetItem assetItem, ThumbnailBuildResult result, bool changed, Stream thumbnailStream, ObjectId thumbnailHash, LoggerResult buildLog)
         {
             try
             {
@@ -75,7 +77,8 @@ namespace Stride.Editor.Thumbnails
                         AssetId = assetItem.Id,
                         Url = assetItem.Location,
                         Result = result,
-                        ThumbnailChanged = changed
+                        ThumbnailChanged = changed,
+                        BuildLog = buildLog,
                     };
 
                     Monitor.Exit(thumbnailCounterLock);

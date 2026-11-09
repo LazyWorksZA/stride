@@ -1,9 +1,13 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
 
+using System.Diagnostics;
 using Stride.Core.Annotations;
+using Stride.Core.Extensions;
 using Stride.Core.IO;
 using Stride.Core.Packages;
+using Stride.Core.Presentation.Commands;
+using Stride.Launcher.Assets.Localization;
 
 namespace Stride.Launcher.ViewModels;
 
@@ -16,6 +20,8 @@ public sealed class StrideDevVersionViewModel : StrideVersionViewModel
     private static int devMinorCounter = int.MaxValue;
     private readonly NugetLocalPackage localPackage;
     private readonly bool isDevRedirect;
+    private readonly string? checkoutDirectory;
+    private readonly string solutionPath;
 
     internal StrideDevVersionViewModel(MainViewModel launcher, NugetStore store, [CanBeNull] NugetLocalPackage localPackage, UDirectory path, bool isDevRedirect)
         : base(launcher, store, localPackage, localPackage.Id, int.MaxValue, devMinorCounter--)
@@ -24,17 +30,177 @@ public sealed class StrideDevVersionViewModel : StrideVersionViewModel
         this.localPackage = localPackage;
         this.isDevRedirect = isDevRedirect;
         DownloadCommand.IsEnabled = false;
+        checkoutDirectory = FindCheckout();
+        solutionPath = FindSolution(checkoutDirectory);
+        OpenCheckoutCommand = new AnonymousCommand(ServiceProvider, () => ShellOpen(checkoutDirectory ?? InstallPath)) { IsEnabled = Directory.Exists(checkoutDirectory ?? InstallPath) };
+        OpenSolutionCommand = new AnonymousCommand(ServiceProvider, () => ShellOpen(solutionPath)) { IsEnabled = File.Exists(solutionPath) };
         // Find the editors so the version can be started.
         UpdateAvailableEditors();
         // Update initial status (IsVisible will be set to true)
         UpdateStatus();
     }
 
+    /// <summary>
+    /// Gets the command that opens the checkout this version is built from in the file manager, or its folder when the checkout isn't known.
+    /// </summary>
+    public ICommandBase OpenCheckoutCommand { get; }
+
+    /// <summary>
+    /// Gets the tooltip of <see cref="OpenCheckoutCommand"/>.
+    /// </summary>
+    public string OpenCheckoutToolTip => string.Format(checkoutDirectory is not null ? Strings.ToolTipOpenCheckout : Strings.ToolTipOpenFolder, FullName);
+
+    /// <summary>
+    /// Gets the text the status bar shows while the row's set-active button is hovered, with the path of the checkout
+    /// so that the -devN versions of several checkouts can be told apart.
+    /// </summary>
+    public string SetActiveToolTip => checkoutDirectory is not null
+        ? string.Format(Strings.ToolTipSetActiveDevVersion, FullName, checkoutDirectory)
+        : string.Format(Strings.ToolTipSetActiveVersion, FullName);
+
+    /// <summary>
+    /// Gets the command that opens the Stride solution of the checkout, with the default application (Visual Studio).
+    /// </summary>
+    public ICommandBase OpenSolutionCommand { get; }
+
+    // The Stride solution of the checkout: at its root, or in build/ for older checkouts.
+    private static string FindSolution(string? checkoutDirectory)
+        => checkoutDirectory is null ? ""
+            : File.Exists(Path.Combine(checkoutDirectory, "Stride.slnx")) ? Path.Combine(checkoutDirectory, "Stride.slnx")
+            : Path.Combine(checkoutDirectory, "build", "Stride.slnx");
+
+    // The checkout this version is built from, or null:
+    // - the ledger of the checkouts built on this machine (as the version tasks write it) maps its -devN suffix, for a
+    //   dev-redirect stub as for a full package;
+    // - else the first folder up from the version's project folder with a .git (a folder, or a file in a worktree).
+    private string? FindCheckout()
+    {
+        if (localPackage?.Version.SpecialVersion is { } label)
+        {
+            var ledger = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "stride", "worktree-ids.txt");
+            try
+            {
+                if (File.Exists(ledger) && FindCheckoutInLedger(File.ReadLines(ledger), label) is { } checkout)
+                    return checkout;
+            }
+            catch (Exception e)
+            {
+                // An unreadable ledger: try the folders
+                e.Ignore();
+            }
+        }
+
+        for (var directory = InstallPath; !string.IsNullOrEmpty(directory); directory = Path.GetDirectoryName(directory))
+        {
+            if (Directory.Exists(Path.Combine(directory, ".git")) || File.Exists(Path.Combine(directory, ".git")))
+                return directory;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Finds in the lines of the ledger the existing checkout of the -devN suffix of a version label (as "beta8-dev3"), or null.
+    /// </summary>
+    internal static string? FindCheckoutInLedger(IEnumerable<string> lines, string versionLabel)
+    {
+        if (versionLabel.Split('-').LastOrDefault(x => x.StartsWith("dev", StringComparison.OrdinalIgnoreCase)) is not { } suffix)
+            return null;
+
+        // Lines of "dev3 = C:\dev\stride3"
+        foreach (var line in lines)
+        {
+            var separator = line.IndexOf('=');
+            if (separator <= 0 || line.StartsWith('#'))
+                continue;
+            var token = line[..separator].Trim();
+            // Older ledgers name the first checkout "(primary)": its builds are -dev
+            if (token == "(primary)")
+                token = "dev";
+            if (string.Equals(token, suffix, StringComparison.OrdinalIgnoreCase)
+                && line[(separator + 1)..].Trim() is var directory && Directory.Exists(directory))
+                return directory;
+        }
+        return null;
+    }
+
+    // Checked again when clicked: the checkout can move or change after the list was made
+    private static void ShellOpen(string path)
+    {
+        if (!Directory.Exists(path) && !File.Exists(path))
+            return;
+        try
+        {
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+        }
+        catch (Exception e)
+        {
+            // No application for it, or the file manager failed: nothing the user can act on
+            e.Ignore();
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override string DeleteConfirmationMessage => string.Format(Strings.ConfirmRemoveDevVersion, FullName);
+
+    // Also from the dev feed the checkout's build fills (as NuGetAssemblyResolver.DevSource): the store mirrors it back
+    // at the next start otherwise, and the version comes back. A build of the checkout brings it back too, on purpose.
+    /// <inheritdoc/>
+    protected override void AfterUninstall()
+    {
+        var devFeed = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "stride", "nugetdev");
+        if (localPackage is null || !Directory.Exists(devFeed))
+            return;
+
+        foreach (var nupkg in Directory.EnumerateFiles(devFeed, $"*.{localPackage.Version}.nupkg"))
+        {
+            try
+            {
+                File.Delete(nupkg);
+            }
+            catch (Exception e)
+            {
+                // In use by a restore: it stays, and the version comes back at the next start
+                e.Ignore();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets whether this version is the one of <paramref name="package"/>, built at <paramref name="realPath"/>.
+    /// </summary>
+    internal bool Matches(NugetLocalPackage package, UDirectory realPath)
+        => localPackage?.Id == package.Id && localPackage.Version == package.Version && path == realPath;
+
     /// <inheritdoc/>
     public override string Name => "Local " + path.MakeRelative(path.GetParent());
 
     /// <inheritdoc/>
-    public override string DisplayName => localPackage is not null ? $"{PackageSimpleName} {localPackage.Version} (local)" : base.DisplayName;
+    public override string DisplayName => localPackage is null ? base.DisplayName
+        : EditorName is null ? $"{PackageSimpleName} {localPackage.Version} (local)"
+        : $"{PackageSimpleName} {localPackage.Version} (local, {EditorName})";
+
+    /// <inheritdoc/>
+    public override string ListName => localPackage is not null ? $"{PackageSimpleName} {localPackage.Version}" : base.ListName;
+
+    /// <inheritdoc/>
+    public override string StartName => EditorName is not null ? $"{FullName} ({EditorName})" : FullName;
+
+    /// <summary>
+    /// Gets the Game Studio this local build is of, WPF or Avalonia, or null when its package is neither. A checkout builds both:
+    /// two packages of the same version, that the version list, the Start button and the versions a recent project can be
+    /// opened with tell apart by it.
+    /// </summary>
+    public string? EditorName => GetEditorName(localPackage?.Id);
+
+    /// <summary>
+    /// Gets the badge of <see cref="EditorName"/>, next to the LOCAL badge in the version list.
+    /// </summary>
+    public string? EditorBadge => EditorName?.ToUpperInvariant();
+
+    /// <summary>
+    /// Gets the Game Studio of the package <paramref name="packageId"/>, WPF or Avalonia, or null when it isn't one of them.
+    /// </summary>
+    internal static string? GetEditorName(string? packageId) => GameStudioEditors.FromPackageId(packageId)?.DisplayName();
 
     /// <inheritdoc/>
     public override string FullName => localPackage?.Version.ToString() ?? path.MakeRelative(path.GetParent());
@@ -72,9 +238,9 @@ public sealed class StrideDevVersionViewModel : StrideVersionViewModel
     protected override string UninstallErrorMessage => string.Empty;
 
     /// <inheritdoc/>
-    protected override Task UpdateVersionsFromStore()
+    protected override Task UpdateVersionsFromStore(Action<int, int>? unusedPackagesProgress = null)
     {
-        return Launcher.RetrieveLocalStrideVersions();
+        return Launcher.RetrieveLocalStrideVersions(unusedPackagesProgress);
     }
 
     /// <inheritdoc/>

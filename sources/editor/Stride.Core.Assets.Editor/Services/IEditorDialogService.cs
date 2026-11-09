@@ -1,145 +1,134 @@
-// Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
+// Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
-using System;
-using System.Collections.Generic;
-using Stride.Core.Assets.Analysis;
-using Stride.Core.Assets.Editor.ViewModel;
-using Stride.Core.Assets.Editor.ViewModel.Progress;
-using Stride.Core.Assets.Templates;
-using Stride.Core.Annotations;
-using Stride.Core.Settings;
-using Stride.Core.Presentation.Commands;
+#nullable disable
+
+using Stride.Core.Assets.Editor.Components.AddAssets;
+using Stride.Core.Assets.Editor.Components.FixAssetReferences;
+using Stride.Core.Assets.Editor.Components.TemplateDescriptions;
+using Stride.Core.Assets.Editor.ViewModels;
 using Stride.Core.Presentation.Services;
-using Stride.Core.Presentation.View;
-using Stride.Core.Presentation.ViewModels;
+using Stride.Core.Settings;
+using Stride.Core.Assets.Editor.ViewModels.Progress;
+using Stride.Core.Assets.Presentation.ViewModels;
 
-namespace Stride.Core.Assets.Editor.Services
+namespace Stride.Core.Assets.Editor.Services;
+
+public interface IEditorDialogService : IDialogService, IAssetPickerService
 {
+    void ShowProgressWindow(WorkProgressViewModel workProgress);
+
     /// <summary>
-    /// This interface represents the dialog service used for the editor. It extends <see cref="IDialogService2"/> with some editor-specific dialogs.
+    /// Shows the progress of a background operation in the notification bar (see <see cref="INotificationService"/>), without
+    /// blocking the editor as <see cref="ShowProgressWindow"/> does.
     /// </summary>
-    public interface IEditorDialogService : IDialogService2
+    /// <param name="workProgress">The progress of the operation.</param>
+    void ShowNotification(WorkProgressViewModel workProgress);
+
+    /// <summary>
+    /// Moves the keyboard focus away from the control that has it, so that an edit in progress (a text box of the property
+    /// grid) is validated, for instance before the session is saved. A host without keyboard focus does nothing.
+    /// </summary>
+    void ClearKeyboardFocus()
     {
-        /// <summary>
-        /// Shows a notification window in the lower right corner of the primary screen.
-        /// </summary>
-        /// <param name="title">The title of the window.</param>
-        /// <param name="message">The message of the window.</param>
-        /// <param name="command">The command to execute when the user clicks on the message.</param>
-        /// <param name="commandParameter">The parameter of the command to execute when the user clicks on the message.</param>
-        void ShowNotificationWindow(string title, string message, ICommandBase command, object commandParameter);
-
-        /// <summary>
-        /// Immediately closes all open notification windows.
-        /// </summary>
-        void CloseAllNotificationWindows();
-
-        /// <summary>
-        /// Adds a question that will be shown the next time the editor receive focus or when calling <see cref="ShowDelayedNotifications"/>.
-        /// </summary>
-        /// <param name="confirmationSettingsKey"></param>
-        /// <param name="message"></param>
-        /// <param name="yesCaption"></param>
-        /// <param name="noCaption"></param>
-        /// <param name="yesAction"></param>
-        /// <param name="noAction"></param>
-        /// <param name="yesNoSettingsKey"></param>
-        void AddDelayedNotification([NotNull] SettingsKey<bool> confirmationSettingsKey, [NotNull] string message, [NotNull] string yesCaption, [NotNull] string noCaption,
-            Action yesAction = null, Action noAction = null, SettingsKey<bool> yesNoSettingsKey = null);
-
-        /// <summary>
-        /// Shows all notifications that were added with <see cref="AddDelayedNotification"/>.
-        /// </summary>
-        void ShowDelayedNotifications();
-
-        /// <summary>
-        /// Shows a window that allows to customize settings.
-        /// </summary>
-        /// <param name="serviceProvider">The service provider for view models.</param>
-        void ShowSettingsWindow(IViewModelServiceProvider serviceProvider);
-
-        /// <summary>
-        /// Shows a progress window which can provide feedback and log on the progression of a background task. This method is non-blocking.
-        /// </summary>
-        /// <param name="workProgress">The <see cref="WorkProgressViewModel"/> to use to provide background task information.</param>
-        /// <param name="minDelay">The minimal delay to wait before opening the dialog. If the dialog should stay open under certain conditions and the work is finished before this delay, the window will open immediately. Otherwise, it will open only if the work is not finished when the delay is over.</param>
-        void ShowProgressWindow(WorkProgressViewModel workProgress, int minDelay);
-
-        /// <summary>
-        /// Creates a package instantiation window, allowing to create or open a package.
-        /// </summary>
-        /// <param name="session">The session in which to load the project.</param>
-        /// <returns>An instance of the <see cref="INewProjectDialog"/> interface.</returns>
-        INewProjectDialog CreateNewProjectDialog(SessionViewModel session);
-
-        /// <summary>
-        /// Creates a asset creation window, allowing to create or import an asset.
-        /// </summary>
-        /// <param name="session">The session in which to load the project.</param>
-        /// <param name="directory">The directory where to create or import the asset.</param>
-        /// <returns>An instance of the <see cref="IItemTemplateDialog"/> interface.</returns>
-        IItemTemplateDialog CreateAddAssetDialog(SessionViewModel session, DirectoryBaseViewModel directory);
-
-        /// <summary>
-        /// Creates a asset creation window from a set of preselected templates, allowing to create or import an asset.
-        /// </summary>
-        /// <param name="session">The session in which to load the project.</param>
-        /// <param name="directory">The directory where to create or import the asset.</param>
-        /// <param name="templates">The collection of templates to display in the window.</param>
-        /// <returns>An instance of the <see cref="IItemTemplateDialog"/> interface.</returns>
-        IItemTemplateDialog CreateAssetTemplatesDialog(SessionViewModel session, DirectoryBaseViewModel directory, IEnumerable<TemplateAssetDescription> templates);
-
-        /// <summary>
-        /// Creates a asset creation window from a set of preselected templates, allowing to create or import an asset. Displays counters of file for each template
-        /// </summary>
-        /// <param name="session">The session in which to load the project.</param>
-        /// <param name="directory">The directory where to create or import the asset.</param>
-        /// <param name="fileCount">The total number of file</param>
-        /// <param name="templates">The collection of templates to display in the window, associated with the number of file supported by this template.</param>
-        /// <returns>An instance of the <see cref="IItemTemplateDialog"/> interface.</returns>
-        IItemTemplateDialog CreateAssetTemplatesDialog(SessionViewModel session, DirectoryBaseViewModel directory, int fileCount, IEnumerable<KeyValuePair<TemplateAssetDescription, int>> templates);
-
-        /// <summary>
-        /// Creates an asset picker dialog.
-        /// </summary>
-        /// <param name="session">The session view model currently in use.</param>
-        /// <returns>An instance of the <see cref="IAssetPickerDialog"/> interface.</returns>
-        IAssetPickerDialog CreateAssetPickerDialog(SessionViewModel session);
-
-        /// <summary>
-        /// Creates a package picker dialog.
-        /// </summary>
-        /// <param name="session">The session view model currently in use.</param>
-        /// <returns>An instance of the <see cref="IPackagePickerDialog"/> interface.</returns>
-        IPackagePickerDialog CreatePackagePickerDialog(SessionViewModel session);
-
-        /// <summary>
-        /// Creates a fix references dialog.
-        /// </summary>
-        /// <param name="serviceProvider">The service provider for view models.</param>
-        /// <param name="assets">The list of assets to fix.</param>
-        /// <param name="dependencyManager">The dependency manager.</param>
-        /// <returns>An instance of the <see cref="IFixReferencesDialog"/> interface.</returns>
-        [NotNull]
-        IFixReferencesDialog CreateFixAssetReferencesDialog([NotNull] IViewModelServiceProvider serviceProvider, [ItemNotNull, NotNull] IReadOnlyCollection<AssetViewModel> assets, [NotNull] IAssetDependencyManager dependencyManager);
-
-        void ClearKeyboardFocus();
-
-        void RegisterDefaultTemplateProviders();
-
-        void RegisterDefaultTemplateProvider(ITemplateProvider provider);
-
-        void RegisterAdditionalTemplateProvider(ITemplateProvider provider);
-
-        void UnregisterAdditionalTemplateProviders();
     }
 
-    public interface IPackagePickerDialog : IModalDialog
+    /// <summary>
+    /// Waits until a question can be asked without interrupting the user: the main window of the editor is in front, with no dialog
+    /// over it, as the delayed notifications of the WPF editor wait for. A host that cannot tell completes at once.
+    /// </summary>
+    /// <param name="token">Stops waiting; the task is then cancelled.</param>
+    Task WaitForMainWindowActiveAsync(CancellationToken token = default)
     {
-        bool AllowMultiSelection { get; set; }
+        return Task.CompletedTask;
+    }
 
-        Func<PickablePackageViewModel, bool> Filter { get; set; }
+    /// <summary>
+    /// Shows the new project window of a session (see <see cref="NewProjectTemplateCollectionViewModel"/>)
+    /// and waits for the user to pick a template. A host without the window returns <c>null</c>.
+    /// </summary>
+    /// <param name="session">The session the project is added to.</param>
+    /// <returns>The template and the name and location of the project, or <c>null</c> when the user cancelled.</returns>
+    Task<NewPackageParameters?> ShowNewProjectDialogAsync(SessionViewModel session)
+    {
+        return Task.FromResult<NewPackageParameters?>(null);
+    }
 
-        IReadOnlyCollection<PickablePackageViewModel> SelectedPackages { get; }
+    /// <summary>
+    /// Shows the project selection window (the recent projects and the templates of a new session, see
+    /// <see cref="NewOrOpenSessionTemplateCollectionViewModel"/>). A host without the window
+    /// selects nothing.
+    /// </summary>
+    /// <param name="templates">The recent projects and the templates to show.</param>
+    /// <returns><c>true</c> when the user accepted a template or asked to open a project (the host then reads the path of the
+    /// existing session or the parameters of the new one from <paramref name="templates"/>); <c>false</c> when they cancelled.</returns>
+    Task<bool> ShowProjectSelectionDialogAsync(NewOrOpenSessionTemplateCollectionViewModel templates)
+    {
+        return Task.FromResult(false);
+    }
+
+    /// <summary>
+    /// Shows the Add asset dialog (the asset templates of the session, see <see cref="AddAssetTemplateCollectionViewModel"/>) and
+    /// waits for the user to pick a template. A host without the dialog picks nothing.
+    /// </summary>
+    /// <param name="templates">The templates to show.</param>
+    /// <returns>The picked template, or <c>null</c> when the user cancelled.</returns>
+    Task<ITemplateDescriptionViewModel?> ShowAddAssetDialogAsync(AddAssetTemplateCollectionViewModel templates)
+    {
+        return Task.FromResult<ITemplateDescriptionViewModel?>(null);
+    }
+
+    /// <summary>
+    /// Shows the templates that can import a set of files (see <see cref="AssetTemplatesViewModel"/>) and waits for the user to
+    /// pick one. A host without the dialog picks nothing.
+    /// </summary>
+    /// <param name="templates">The templates to show.</param>
+    /// <returns>The picked template, or <c>null</c> when the user cancelled.</returns>
+    Task<TemplateDescriptionViewModel?> ShowAssetTemplatesDialogAsync(AssetTemplatesViewModel templates)
+    {
+        return Task.FromResult<TemplateDescriptionViewModel?>(null);
+    }
+
+    /// <summary>
+    /// Shows the references to fix before assets are deleted (see <see cref="FixAssetReferencesViewModel"/>) and waits for the
+    /// user to decide what to do with each of them. A host without the dialog cancels.
+    /// </summary>
+    /// <param name="fixReferences">The references to fix, initialized with the deleted assets.</param>
+    /// <returns><c>true</c> when the user handled every reference (the caller then applies the fixes with
+    /// <see cref="Components.FixReferences.FixReferencesViewModel{T}.ProcessFixes"/>); <c>false</c> when they cancelled.</returns>
+    Task<bool> ShowFixAssetReferencesDialogAsync(FixAssetReferencesViewModel fixReferences)
+    {
+        return Task.FromResult(false);
+    }
+
+    /// <summary>
+    /// Shows the package picker of the Add dependency command, which lists the loaded and the suggested packages of the session
+    /// that pass the given filter. A host without a package picker returns <c>null</c>.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="filter">The packages that can be picked.</param>
+    /// <returns>The picked packages, or <c>null</c> when the user cancelled.</returns>
+    Task<IReadOnlyCollection<PickablePackageViewModel>?> ShowPackagePickerDialogAsync(SessionViewModel session, Func<PickablePackageViewModel, bool> filter)
+    {
+        return Task.FromResult<IReadOnlyCollection<PickablePackageViewModel>?>(null);
+    }
+
+    /// <summary>
+    /// Asks a yes/no question once the main window is active and nothing else is up (see <see cref="WaitForMainWindowActiveAsync"/>),
+    /// with a "don't ask again" box, then runs the action of the answer. A question already waiting for the same setting is not
+    /// asked twice.
+    /// </summary>
+    /// <param name="confirmationSettingsKey">Whether to ask; the "don't ask again" box sets it to <c>false</c>.</param>
+    /// <param name="message">The question.</param>
+    /// <param name="yesCaption">The caption of the yes button.</param>
+    /// <param name="noCaption">The caption of the no button.</param>
+    /// <param name="yesAction">What a yes does.</param>
+    /// <param name="noAction">What a no does.</param>
+    /// <param name="yesNoSettingsKey">The answer to use when the question is not asked; "don't ask again" saves the answer there.
+    /// Without it, the answer is yes, and only a yes can be remembered.</param>
+    /// <returns>A task that completes when the question was answered and its action ran. A host that keeps its own queue of
+    /// questions (the WPF editor) may complete it as soon as the question is queued.</returns>
+    Task AddDelayedNotification(SettingsKey<bool> confirmationSettingsKey, string message, string yesCaption, string noCaption, Action? yesAction = null, Action? noAction = null, SettingsKey<bool>? yesNoSettingsKey = null)
+    {
+        return DelayedNotifications.AskAsync(this, confirmationSettingsKey, message, yesCaption, noCaption, yesAction, noAction, yesNoSettingsKey);
     }
 }

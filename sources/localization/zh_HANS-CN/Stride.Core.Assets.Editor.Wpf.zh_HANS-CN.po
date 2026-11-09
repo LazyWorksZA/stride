@@ -1,0 +1,759 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2026-11-07 10:57:06+0000\n"
+"PO-Revision-Date: 2019-09-03 01:25+0000\n"
+"Last-Translator: 陈宇航 <xiaocunzhangh@outlook.com>\n"
+"Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
+"stride/coreassetseditor/zh_HANS-CN/>\n"
+"Language: zh_HANS-CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 3.9-dev\n"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Settings/ThemesSettings.cs:12
+msgctxt "Settings"
+msgid "Themes"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Settings/ThemesSettings.cs:18
+msgctxt "Settings"
+msgid "Theme Name"
+msgstr ""
+
+#. Message displayed when the previous attempt to load the startup project failed. {0} is a file name
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:151
+msgctxt "Button"
+msgid "Try again"
+msgstr "再试一次"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:78
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:31
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:35
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:53
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:21
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/SettingsWindow.xaml:31
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:32
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:152
+msgctxt "Button"
+msgid "Cancel"
+msgstr "取消"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:154
+msgctxt "Message"
+msgid ""
+"The last attempt to load the project **{0}** failed. \r\n"
+"\r\n"
+"Do you want to try to load it again?"
+msgstr ""
+"最后一次尝试加载项目 **{0}** 失败。\n"
+"\n"
+"您想再试一次吗？"
+
+#. Message displayed when the solution file to open does not exist. {0} is a file path
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:186
+msgctxt "Message"
+msgid "The file '{0}' does not exist."
+msgstr "文件 '{0}' 不存在。"
+
+#. Message displayed when trying to open an unsaved file with the text editor
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:216
+msgctxt "Message"
+msgid "You need to save the file before you can open it."
+msgstr "您需要先保存文件，然后才能打开它。"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:229
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:261
+msgctxt "Message"
+msgid "An error occurred while opening the file."
+msgstr "在打开文件时发生错误。"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:306
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:379
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:800
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:858
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:927
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:952
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:991
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1006
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1035
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1243
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1269
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1296
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1311
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1376
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1665
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/ValueConverters/ContentReferenceToDisplayUrl.cs:20
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/ValueConverters/ContentReferenceToDisplayUrl.cs:33
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/ValueConverters/ContentReferenceToUrl.cs:27
+msgid "(Different values)"
+msgstr "(不同的值)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml.cs:28
+msgctxt "Title"
+msgid "Project selection - {0}"
+msgstr "选择项目 - {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:23
+msgctxt "ToolTip"
+msgid "Toggle Debug"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:26
+msgctxt "ToolTip"
+msgid "Toggle Verbose"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:29
+msgctxt "ToolTip"
+msgid "Toggle Info"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:32
+msgctxt "ToolTip"
+msgid "Toggle Warning"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:35
+msgctxt "ToolTip"
+msgid "Toggle Error"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:38
+msgctxt "ToolTip"
+msgid "Toggle Fatal"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:41
+msgctxt "ToolTip"
+msgid "Toggle Exception Stack Trace"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:40
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:66
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:14
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1459
+msgid "Select an asset"
+msgstr "选择资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:25
+msgctxt "Menu"
+msgid "Asset"
+msgstr "资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:26
+msgctxt "Menu"
+msgid "Delete"
+msgstr "删除"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:28
+msgctxt "Menu"
+msgid "Rename"
+msgstr "重命名"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:30
+msgctxt "Menu"
+msgid "Explore"
+msgstr "Explore"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:31
+msgctxt "Menu"
+msgid "OpenWithTextEditor"
+msgstr "使用文本编辑器打开"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:33
+msgctxt "Menu"
+msgid "OpenAssetFile"
+msgstr "打开资产文件"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:35
+msgctxt "Menu"
+msgid "OpenSourceFile"
+msgstr "打开源文件"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:37
+msgctxt "Menu"
+msgid "ShowInExplorer"
+msgstr "在资源管理器中显示"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:48
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:15
+msgctxt "Button"
+msgid "OK"
+msgstr "确定"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:48
+msgctxt "ToolTip"
+msgid "Select these assets"
+msgstr "选择这些资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:31
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:35
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:53
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:21
+msgctxt "ToolTip"
+msgid "Cancel (Esc)"
+msgstr "取消 (Esc)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:67
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:124
+#, fuzzy
+msgid "Replaces {0}"
+msgstr "替换..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:71
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:128
+msgid "Replaced by {0}"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:112
+msgid "Name: {0}"
+msgstr "名称: {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:113
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:120
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:152
+msgid "Type: {0}"
+msgstr "类型: {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:119
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:151
+msgid "URL: {0}"
+msgstr "URL: {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:121
+msgid "Tags: {0}"
+msgstr "Tags: {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:136
+msgid "Included in build as dependency"
+msgstr "在构建中包含，并作为依赖项"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:140
+msgid "Overridden in build (content not used)"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:144
+msgid "Excluded from build"
+msgstr "从构建中排除"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:231
+msgctxt "ToolTip"
+msgid "Add an asset to this location"
+msgstr "添加资产到该位置"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:235
+msgid "Add asset"
+msgstr "添加资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:256
+msgctxt "ToolTip"
+msgid "Update assets whose source files have changed"
+msgstr "更新那些源文件已更改的资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:283
+msgctxt "ToolTip"
+msgid "Import last effects compiled remotely"
+msgstr "导入远程编译的最后的 effects"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:309
+msgctxt "ToolTip"
+msgid "Open asset in dedicated editor"
+msgstr "在专用编辑器中打开资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:318
+msgctxt "ToolTip"
+msgid "Asset view options"
+msgstr "资产视图选项"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:323
+msgctxt "Menu"
+msgid "Display"
+msgstr "显示"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:324
+msgctxt "Menu"
+msgid "Assets in selected folder only"
+msgstr "仅有在选定文件夹中的资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:327
+msgctxt "Menu"
+msgid "Assets and folders in selected folder"
+msgstr "在选定文件夹中的资产和文件夹"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:330
+msgctxt "Menu"
+msgid "Assets in selected folder and subfolders"
+msgstr "在选定文件夹和子文件夹中的资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:335
+msgctxt "Menu"
+msgid "Name"
+msgstr "名称"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:338
+msgctxt "Menu"
+msgid "Date modified"
+msgstr "修改日期"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:341
+msgctxt "Menu"
+msgid "Type"
+msgstr "类型"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:344
+msgctxt "Menu"
+msgid "Unsaved changes"
+msgstr "未保存的更改"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:353
+msgctxt "ToolTip"
+msgid "Zoom in"
+msgstr "放大"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:358
+msgctxt "ToolTip"
+msgid "Zoom out"
+msgstr "缩小"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:363
+msgctxt "Menu"
+msgid "Tiles"
+msgstr "Tiles"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:376
+msgid "Add a filter..."
+msgstr "添加过滤器…"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:380
+msgid "Filter assets by name, type or tag"
+msgstr "按名称、类型或 tag 过滤资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:406
+msgctxt "ToolTip"
+msgid "Clear filters"
+msgstr "清空过滤器"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:448
+msgid ""
+"No asset to display in this folder or no folder selected. Check your active "
+"filters."
+msgstr "此文件夹中没有要显示的资产或没有要选择的文件夹。请检查您的过滤器。"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:451
+msgid "You can also drop files here to import assets."
+msgstr "您还可以在这里拖放文件以导入资产。"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:36
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:130
+msgctxt "ToolTip"
+msgid "Add..."
+msgstr "添加..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:61
+msgctxt "ToolTip"
+msgid "Replace..."
+msgstr "替换..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:139
+msgctxt "ToolTip"
+msgid "Delete"
+msgstr "删除"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:414
+msgid "List"
+msgstr "列表"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:415
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:481
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:519
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:582
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:640
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:698
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:757
+msgid "{0} item"
+msgid_plural "{0} items"
+msgstr[0] "{0} 项"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:456
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:560
+msgid "Add to {0}"
+msgstr "添加到 {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:480
+msgid "Array"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:518
+#, fuzzy
+msgid "Set"
+msgstr "选择"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:577
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:603
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:661
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:719
+msgctxt "ToolTip"
+msgid "Add a new entry to the dictionary"
+msgstr "向字典中添加一个新条目"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:581
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:639
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:697
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:756
+msgid "Dictionary"
+msgstr "字典"
+
+#. Keep the colon (:)
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:614
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:672
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:730
+msgid "Key name:"
+msgstr "Key 名称:"
+
+#. Default name for a new key in a dictionary
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:674
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:690
+msgid "New key"
+msgstr "新建 key"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:782
+msgctxt "ToolTIp"
+msgid "Character"
+msgstr "字符"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:789
+msgctxt "ToolTip"
+msgid "Unicode value"
+msgstr "Unicode 值"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1233
+msgctxt "ToolTip"
+msgid "Angle in degrees"
+msgstr "角度(按度数)"
+
+#. This button opens a file dialog
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:65
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:81
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1255
+msgctxt "ToolTip"
+msgid "Browse directory"
+msgstr "浏览目录"
+
+#. This button opens a file dialog
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1281
+msgctxt "ToolTip"
+msgid "Browse file"
+msgstr "浏览文件"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1324
+msgctxt "Button"
+msgid "Change values..."
+msgstr "变化值…"
+
+#. As for "Select all items"
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1333
+msgctxt "Button"
+msgid "All"
+msgstr "全部"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1333
+msgctxt "ToolTip"
+msgid "Select all values"
+msgstr "选择所有值"
+
+#. As for "Clear selection"
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1335
+msgctxt "Button"
+msgid "None"
+msgstr "清空选择"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1335
+msgctxt "ToolTip"
+msgid "Clear selection"
+msgstr "清空选择"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1337
+msgctxt "Button"
+msgid "Invert"
+msgstr "倒置"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1337
+msgctxt "ToolTip"
+msgid "Invert selection"
+msgstr "反选"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1454
+msgid "Select the referenced asset"
+msgstr "选择引用的资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1464
+msgid "Clear this reference"
+msgstr "清空该引用"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1474
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1548
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1603
+msgctxt "ToolTip"
+msgid "Select an asset"
+msgstr "选择资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1478
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1608
+msgctxt "ToolTip"
+msgid "Clear the reference"
+msgstr "清空引用"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1482
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1537
+msgctxt "ToolTip"
+msgid "Select the referenced asset"
+msgstr "选择引用的资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1621
+msgctxt "ToolTip"
+msgid "Create an instance of this structure"
+msgstr "创建此结构的实例"
+
+#. It is ok to keep "null" in english
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1626
+msgctxt "ToolTip"
+msgid "Clear value (set to null)"
+msgstr "清空该值(设为 null)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1633
+msgid "(null)"
+msgstr "(null)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1662
+msgid "{0} (Not supported)"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1678
+msgid "Unable to load the object of type {0} from assembly {1}"
+msgstr "无法从程序集 {1} 加载类型为 {0} 的对象"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/NotificationWindow.xaml:6
+msgid "Notification"
+msgstr "通知"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:10
+msgid "Select a package"
+msgstr "选择一个包"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:15
+msgctxt "ToolTip"
+msgid "Select this package"
+msgstr "选择这个包"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/SettingsWindow.xaml:15
+msgid "Settings"
+msgstr "设置"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/SettingsWindow.xaml:26
+msgctxt "Button"
+msgid "Save and close"
+msgstr "保存并关闭"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:19
+msgid "Operation completed."
+msgstr "操作完成。"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:20
+msgid "Operation failed."
+msgstr "操作失败。"
+
+#. Log message displayed when an operation has been canceled
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:21
+msgid "Operation cancelled."
+msgstr "操作取消。"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:27
+msgctxt "Button"
+msgid "Close"
+msgstr "关闭"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/AddAssets/View/ItemTemplatesWindow.xaml:12
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/AddItemWindow.xaml:10
+msgid "Add asset..."
+msgstr "添加资产..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/AddAssets/View/ItemTemplatesWindow.xaml:34
+msgid "out of {0} file(s)"
+msgstr "从 {0} 文件中取出"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:13
+msgid "Fix references ({0})"
+msgstr "修复引用({0})"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:35
+msgid ""
+"The asset {0} is referenced by other assets. Choose how to handle these "
+"references."
+msgstr "资产 {0} 被其他资产引用。请选择如何处理这些引用。"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:37
+msgctxt "Button"
+msgid "Replace all the references with a reference to a different asset:"
+msgstr "将所有引用替换为对不同资产的引用:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:42
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:61
+msgctxt "ToolTip"
+msgid "Select asset"
+msgstr "选择资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:49
+msgid "Referencer"
+msgstr "引用者"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:56
+msgid "Replacement asset"
+msgstr "重置资产"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:63
+msgctxt "Button"
+msgid "Clear this reference"
+msgstr "清空该引用"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:73
+msgctxt "Button"
+msgid "Replace references individually:"
+msgstr "单独替换引用:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:75
+msgctxt "Button"
+msgid "Done"
+msgstr "完成"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:76
+msgctxt "Button"
+msgid "Clear references"
+msgstr "清空引用"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:76
+msgctxt "ToolTip"
+msgid "Clear the references of the current asset"
+msgstr "清空当前资产的引用"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:77
+msgctxt "Button"
+msgid "Clear all references"
+msgstr "清空所有引用"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:77
+msgctxt "ToolTip"
+msgid "Clear references for all assets being deleted"
+msgstr "清空要删除的所有资产的引用"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:78
+msgctxt "ToolTip"
+msgid "Cancel operation"
+msgstr "取消操作"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/AddItemUserControl.xaml:22
+msgid "Search"
+msgstr "搜索"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/AddItemUserControl.xaml:39
+msgctxt "ToolTip"
+msgid "Import directly from files"
+msgstr "直接从文件导入"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:11
+msgid "New package"
+msgstr "新建包"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:25
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:29
+msgctxt "Button"
+msgid "Select"
+msgstr "选择"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:26
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:30
+msgctxt "ToolTip"
+msgid "Use the selected template"
+msgstr "使用选定的模板"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:57
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:73
+msgid "Name:"
+msgstr "名称:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:63
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:79
+msgid "Location:"
+msgstr "位置:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:24
+msgctxt "Button"
+msgid "Browse for existing project"
+msgstr "浏览现有项目"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:25
+msgctxt "Button"
+msgid "Reload last session automatically at startup"
+msgstr "在启动时自动重新加载最后一个会话"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:91
+msgid "Solution name:"
+msgstr "解决方案名称:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:92
+msgid "(Auto-generate solution name)"
+msgstr "(自动生成解决方案名称)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:98
+msgid "Solution location:"
+msgstr "解决方案的位置:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:103
+msgid "(Same location)"
+msgstr "(同一位置)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:40
+msgctxt "Menu"
+msgid "Show in Explorer"
+msgstr "在资源管理器中显示"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:44
+msgctxt "Menu"
+msgid "Remove From List"
+msgstr "从列表中删除"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:34
+msgctxt "Menu"
+msgid "Open"
+msgstr "打开"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:41
+msgctxt "Menu"
+msgid "Copy solution path"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:42
+msgctxt "Menu"
+msgid "Copy folder path"
+msgstr ""
+
+#~ msgid "Reference path"
+#~ msgstr "引用路径"
+
+#~ msgid "Name"
+#~ msgstr "名称"
+
+#~ msgid "Type"
+#~ msgstr "类型"
+
+#~ msgid "URL"
+#~ msgstr "URL"
+
+#~ msgid "Included"
+#~ msgstr "包含"
+
+#~ msgctxt "Menu"
+#~ msgid "Grid"
+#~ msgstr "网格"

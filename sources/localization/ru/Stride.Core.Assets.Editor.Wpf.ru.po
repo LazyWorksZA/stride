@@ -1,0 +1,765 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2026-11-07 10:57:06+0000\n"
+"PO-Revision-Date: 2019-03-09 00:04+0000\n"
+"Last-Translator: Scorp121 <kurkinsn@gmail.com>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/stride/"
+"coreassetseditor/ru/>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 3.5.1-dev\n"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Settings/ThemesSettings.cs:12
+msgctxt "Settings"
+msgid "Themes"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Settings/ThemesSettings.cs:18
+msgctxt "Settings"
+msgid "Theme Name"
+msgstr ""
+
+#. Message displayed when the previous attempt to load the startup project failed. {0} is a file name
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:151
+msgctxt "Button"
+msgid "Try again"
+msgstr "Повторить"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:78
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:31
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:35
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:53
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:21
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/SettingsWindow.xaml:31
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:32
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:152
+msgctxt "Button"
+msgid "Cancel"
+msgstr "Отмена"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:154
+msgctxt "Message"
+msgid ""
+"The last attempt to load the project **{0}** failed. \r\n"
+"\r\n"
+"Do you want to try to load it again?"
+msgstr ""
+"Последняя попытка загрузить проект **{0}** не удалась.\n"
+"\n"
+"Попробовать загрузить его снова?"
+
+#. Message displayed when the solution file to open does not exist. {0} is a file path
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:186
+msgctxt "Message"
+msgid "The file '{0}' does not exist."
+msgstr "Файл '{0}' не существует."
+
+#. Message displayed when trying to open an unsaved file with the text editor
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:216
+msgctxt "Message"
+msgid "You need to save the file before you can open it."
+msgstr "Вам нужно сохранить файл, прежде чем вы сможете его открыть."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:229
+#: ../editor/Stride.Core.Assets.Editor.Wpf/ViewModel/EditorViewModel.cs:261
+msgctxt "Message"
+msgid "An error occurred while opening the file."
+msgstr "Ошибка при открытии файла."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:306
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:379
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:800
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:858
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:927
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:952
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:991
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1006
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1035
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1243
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1269
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1296
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1311
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1376
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1665
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/ValueConverters/ContentReferenceToDisplayUrl.cs:20
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/ValueConverters/ContentReferenceToDisplayUrl.cs:33
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/ValueConverters/ContentReferenceToUrl.cs:27
+msgid "(Different values)"
+msgstr "(Разные значения)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml.cs:28
+msgctxt "Title"
+msgid "Project selection - {0}"
+msgstr "Выбор проекта - {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:23
+msgctxt "ToolTip"
+msgid "Toggle Debug"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:26
+msgctxt "ToolTip"
+msgid "Toggle Verbose"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:29
+msgctxt "ToolTip"
+msgid "Toggle Info"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:32
+msgctxt "ToolTip"
+msgid "Toggle Warning"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:35
+msgctxt "ToolTip"
+msgid "Toggle Error"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:38
+msgctxt "ToolTip"
+msgid "Toggle Fatal"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Themes/generic.xaml:41
+msgctxt "ToolTip"
+msgid "Toggle Exception Stack Trace"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:40
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:66
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:14
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1459
+msgid "Select an asset"
+msgstr "Выбрать актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:25
+msgctxt "Menu"
+msgid "Asset"
+msgstr "Актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:26
+msgctxt "Menu"
+msgid "Delete"
+msgstr "Удалить"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:28
+msgctxt "Menu"
+msgid "Rename"
+msgstr "Переименовать"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:30
+msgctxt "Menu"
+msgid "Explore"
+msgstr "Проводник"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:31
+msgctxt "Menu"
+msgid "OpenWithTextEditor"
+msgstr "Открыть в текстовом редакторе"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:33
+msgctxt "Menu"
+msgid "OpenAssetFile"
+msgstr "Открыть актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:35
+msgctxt "Menu"
+msgid "OpenSourceFile"
+msgstr "Открыть исходный файл"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:37
+msgctxt "Menu"
+msgid "ShowInExplorer"
+msgstr "Показать в проводнике"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:48
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:15
+msgctxt "Button"
+msgid "OK"
+msgstr "Ок"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:48
+msgctxt "ToolTip"
+msgid "Select these assets"
+msgstr "Выбрать эти активы"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:31
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:35
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetPickerWindow.xaml:53
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:21
+msgctxt "ToolTip"
+msgid "Cancel (Esc)"
+msgstr "Отмена (Esc)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:67
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:124
+#, fuzzy
+msgid "Replaces {0}"
+msgstr "Заменить..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:71
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:128
+msgid "Replaced by {0}"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:112
+msgid "Name: {0}"
+msgstr "Имя: {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:113
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:120
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:152
+msgid "Type: {0}"
+msgstr "Тип: {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:119
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:151
+msgid "URL: {0}"
+msgstr "Ссылки: {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:121
+msgid "Tags: {0}"
+msgstr "Тэги: {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:136
+msgid "Included in build as dependency"
+msgstr "Включено в сборку как зависимость"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:140
+msgid "Overridden in build (content not used)"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:144
+msgid "Excluded from build"
+msgstr "Не включено в сборку"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:231
+msgctxt "ToolTip"
+msgid "Add an asset to this location"
+msgstr "Добавить актив в это расположение"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:235
+msgid "Add asset"
+msgstr "Добавить актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:256
+msgctxt "ToolTip"
+msgid "Update assets whose source files have changed"
+msgstr "Обновление ресурсов, исходные файлы которых изменились"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:283
+msgctxt "ToolTip"
+msgid "Import last effects compiled remotely"
+msgstr "Импорт последних эффектов, скомпилированных удаленно"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:309
+msgctxt "ToolTip"
+msgid "Open asset in dedicated editor"
+msgstr "Редактировать"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:318
+msgctxt "ToolTip"
+msgid "Asset view options"
+msgstr "Настройки просмотра активов"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:323
+msgctxt "Menu"
+msgid "Display"
+msgstr "Показывать"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:324
+msgctxt "Menu"
+msgid "Assets in selected folder only"
+msgstr "Только активы в выбранной папке"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:327
+msgctxt "Menu"
+msgid "Assets and folders in selected folder"
+msgstr "Активы и папки в выбранной директории"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:330
+msgctxt "Menu"
+msgid "Assets in selected folder and subfolders"
+msgstr "Активы в выбранной и во вложенных в неё папках"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:335
+msgctxt "Menu"
+msgid "Name"
+msgstr "Имя"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:338
+msgctxt "Menu"
+msgid "Date modified"
+msgstr "Дата изменения"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:341
+msgctxt "Menu"
+msgid "Type"
+msgstr "Тип"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:344
+msgctxt "Menu"
+msgid "Unsaved changes"
+msgstr "Несохраненные изменения"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:353
+msgctxt "ToolTip"
+msgid "Zoom in"
+msgstr "Увеличить"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:358
+msgctxt "ToolTip"
+msgid "Zoom out"
+msgstr "Уменьшить"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:363
+msgctxt "Menu"
+msgid "Tiles"
+msgstr "Эскизы"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:376
+msgid "Add a filter..."
+msgstr "Добавить фильтр..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:380
+msgid "Filter assets by name, type or tag"
+msgstr "Фильтр активов по имени, типу или тэгу"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:406
+msgctxt "ToolTip"
+msgid "Clear filters"
+msgstr "Сбросить фильтры"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:448
+msgid ""
+"No asset to display in this folder or no folder selected. Check your active "
+"filters."
+msgstr ""
+"Нет ресурсов для отображения в этой папке или папка не выбрана. Проверьте "
+"фильтр поиска активов."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/AssetViewUserControl.xaml:451
+msgid "You can also drop files here to import assets."
+msgstr "Вы также можете перетащите сюда файлы для импорта активов."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:36
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:130
+msgctxt "ToolTip"
+msgid "Add..."
+msgstr "Добавить..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:61
+msgctxt "ToolTip"
+msgid "Replace..."
+msgstr "Заменить..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:139
+msgctxt "ToolTip"
+msgid "Delete"
+msgstr "Удалить"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:414
+msgid "List"
+msgstr "Список"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:415
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:481
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:519
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:582
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:640
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:698
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:757
+msgid "{0} item"
+msgid_plural "{0} items"
+msgstr[0] "{0} предмет"
+msgstr[1] "{0} предмета"
+msgstr[2] "{0} предметов"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:456
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:560
+msgid "Add to {0}"
+msgstr "Добавить в {0}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:480
+msgid "Array"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:518
+#, fuzzy
+msgid "Set"
+msgstr "Выбрать"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:577
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:603
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:661
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:719
+msgctxt "ToolTip"
+msgid "Add a new entry to the dictionary"
+msgstr "Добавить новую запись в словарь"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:581
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:639
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:697
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:756
+msgid "Dictionary"
+msgstr "Словарь"
+
+#. Keep the colon (:)
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:614
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:672
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:730
+msgid "Key name:"
+msgstr "Ключ:"
+
+#. Default name for a new key in a dictionary
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:674
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:690
+msgid "New key"
+msgstr "Новый ключ"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:782
+msgctxt "ToolTIp"
+msgid "Character"
+msgstr "Персонаж"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:789
+msgctxt "ToolTip"
+msgid "Unicode value"
+msgstr "значение Unicode"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1233
+msgctxt "ToolTip"
+msgid "Angle in degrees"
+msgstr "Угол в градусах"
+
+#. This button opens a file dialog
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:65
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:81
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1255
+msgctxt "ToolTip"
+msgid "Browse directory"
+msgstr "Выбрать каталог"
+
+#. This button opens a file dialog
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1281
+msgctxt "ToolTip"
+msgid "Browse file"
+msgstr "Посмотреть файл"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1324
+msgctxt "Button"
+msgid "Change values..."
+msgstr "Изменение значений..."
+
+#. As for "Select all items"
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1333
+msgctxt "Button"
+msgid "All"
+msgstr "Все"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1333
+msgctxt "ToolTip"
+msgid "Select all values"
+msgstr "Выбрать все значения"
+
+#. As for "Clear selection"
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1335
+msgctxt "Button"
+msgid "None"
+msgstr "Нет"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1335
+msgctxt "ToolTip"
+msgid "Clear selection"
+msgstr "Очистить выделенное"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1337
+msgctxt "Button"
+msgid "Invert"
+msgstr "Инвертировать"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1337
+msgctxt "ToolTip"
+msgid "Invert selection"
+msgstr "Инвертировать выделение"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1454
+msgid "Select the referenced asset"
+msgstr "Выбрать указанный актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1464
+msgid "Clear this reference"
+msgstr "Очистить эту ссылку"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1474
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1548
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1603
+msgctxt "ToolTip"
+msgid "Select an asset"
+msgstr "Выбрать актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1478
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1608
+msgctxt "ToolTip"
+msgid "Clear the reference"
+msgstr "Очистить ссылку"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1482
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1537
+msgctxt "ToolTip"
+msgid "Select the referenced asset"
+msgstr "Выберите референсный актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1621
+msgctxt "ToolTip"
+msgid "Create an instance of this structure"
+msgstr "Создать экземпляр этой структуры"
+
+#. It is ok to keep "null" in english
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1626
+msgctxt "ToolTip"
+msgid "Clear value (set to null)"
+msgstr "Очистить значение (установить на ноль)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1633
+msgid "(null)"
+msgstr "(значение null)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1662
+msgid "{0} (Not supported)"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/DefaultPropertyTemplateProviders.xaml:1678
+msgid "Unable to load the object of type {0} from assembly {1}"
+msgstr "Невозможно загрузить объект типа {0} из сборки {1}"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/NotificationWindow.xaml:6
+msgid "Notification"
+msgstr "Уведомление"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:10
+msgid "Select a package"
+msgstr "Выбрать пакет"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/PackagePickerWindow.xaml:15
+msgctxt "ToolTip"
+msgid "Select this package"
+msgstr "Выбрать этот пакет"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/SettingsWindow.xaml:15
+msgid "Settings"
+msgstr "Настройки"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/SettingsWindow.xaml:26
+msgctxt "Button"
+msgid "Save and close"
+msgstr "Сохранить и закрыть"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:19
+msgid "Operation completed."
+msgstr "Операция завершена."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:20
+msgid "Operation failed."
+msgstr "Операция не удалась."
+
+#. Log message displayed when an operation has been canceled
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:21
+msgid "Operation cancelled."
+msgstr "Операция отменена."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/View/WorkProgressWindow.xaml:27
+msgctxt "Button"
+msgid "Close"
+msgstr "Закрыть"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/AddAssets/View/ItemTemplatesWindow.xaml:12
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/AddItemWindow.xaml:10
+msgid "Add asset..."
+msgstr "Добавить актив..."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/AddAssets/View/ItemTemplatesWindow.xaml:34
+msgid "out of {0} file(s)"
+msgstr "{0} из {0} файла(ов)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:13
+msgid "Fix references ({0})"
+msgstr "Исправить ссылки ({0})"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:35
+msgid ""
+"The asset {0} is referenced by other assets. Choose how to handle these "
+"references."
+msgstr ""
+"На актив {0} ссылаются другие активы. Выберите, что делать с этими ссылками."
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:37
+msgctxt "Button"
+msgid "Replace all the references with a reference to a different asset:"
+msgstr "Заменить все ссылки, ссылкой на другой актив:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:42
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:61
+msgctxt "ToolTip"
+msgid "Select asset"
+msgstr "Выбрать актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:49
+msgid "Referencer"
+msgstr "Справочник"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:56
+msgid "Replacement asset"
+msgstr "Замена актива"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:63
+msgctxt "Button"
+msgid "Clear this reference"
+msgstr "Очистить ссылку"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:73
+msgctxt "Button"
+msgid "Replace references individually:"
+msgstr "Заменить ссылки по отдельности:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:75
+msgctxt "Button"
+msgid "Done"
+msgstr "Готово"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:76
+msgctxt "Button"
+msgid "Clear references"
+msgstr "Очистить ссылки"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:76
+msgctxt "ToolTip"
+msgid "Clear the references of the current asset"
+msgstr "Очистить ссылки на текущий актив"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:77
+msgctxt "Button"
+msgid "Clear all references"
+msgstr "Очистить все ссылки"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:77
+msgctxt "ToolTip"
+msgid "Clear references for all assets being deleted"
+msgstr "Очистить ссылки на все удаляемые активы"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/FixAssetReferences/Views/FixAssetReferencesWindow.xaml:78
+msgctxt "ToolTip"
+msgid "Cancel operation"
+msgstr "Отмена операции"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/AddItemUserControl.xaml:22
+msgid "Search"
+msgstr "Поиск"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/AddItemUserControl.xaml:39
+msgctxt "ToolTip"
+msgid "Import directly from files"
+msgstr "Импорт напрямую из файлов"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:11
+msgid "New package"
+msgstr "Новый пакет"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:25
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:29
+msgctxt "Button"
+msgid "Select"
+msgstr "Выбрать"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:26
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:30
+msgctxt "ToolTip"
+msgid "Use the selected template"
+msgstr "Использовать выбранный шаблон"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:57
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:73
+msgid "Name:"
+msgstr "Имя:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/NewProjectWindow.xaml:63
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:79
+msgid "Location:"
+msgstr "Расположение:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:24
+msgctxt "Button"
+msgid "Browse for existing project"
+msgstr "Выбрать существующий проект"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:25
+msgctxt "Button"
+msgid "Reload last session automatically at startup"
+msgstr "Загружать последнюю сессию при запуске"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:91
+msgid "Solution name:"
+msgstr "Имя решения:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:92
+msgid "(Auto-generate solution name)"
+msgstr "(Автоматически генерировать имя решения)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:98
+msgid "Solution location:"
+msgstr "Расположение решения:"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/ProjectSelectionWindow.xaml:103
+msgid "(Same location)"
+msgstr "(В том же месте)"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:40
+msgctxt "Menu"
+msgid "Show in Explorer"
+msgstr "Показать в проводнике"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:44
+msgctxt "Menu"
+msgid "Remove From List"
+msgstr "Удалить из списка"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:34
+msgctxt "Menu"
+msgid "Open"
+msgstr "Открыть"
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:41
+msgctxt "Menu"
+msgid "Copy solution path"
+msgstr ""
+
+#: ../editor/Stride.Core.Assets.Editor.Wpf/Components/TemplateDescriptions/Views/TemplateBrowserUserControl.xaml:42
+msgctxt "Menu"
+msgid "Copy folder path"
+msgstr ""
+
+#~ msgid "Reference path"
+#~ msgstr "Ссылка на актив"
+
+#~ msgid "Name"
+#~ msgstr "Имя"
+
+#~ msgid "Type"
+#~ msgstr "Тип"
+
+#~ msgid "URL"
+#~ msgstr "Путь"
+
+#~ msgid "Included"
+#~ msgstr "Входит в комплект"
+
+#~ msgctxt "Menu"
+#~ msgid "Grid"
+#~ msgstr "Подробно"

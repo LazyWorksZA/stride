@@ -1,12 +1,13 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 using System;
 using System.Linq;
 using Stride.Core.Assets;
-using Stride.Core.Assets.Editor.ViewModel;
 using Stride.Core.Presentation.Extensions;
 using Stride.Assets;
 using Stride.Data;
+using Stride.Core.Assets.Presentation.ViewModels;
 
 namespace Stride.Editor.Build
 {
@@ -32,10 +33,10 @@ namespace Stride.Editor.Build
 
     public class GameSettingsProviderService : IDisposable, IGameSettingsAccessor
     {
-        private readonly SessionViewModel session;
+        private readonly ISessionViewModel session;
         private Package currentPackage;
 
-        public GameSettingsProviderService(SessionViewModel session)
+        public GameSettingsProviderService(ISessionViewModel session)
         {
             this.session = session;
             session.SessionStateChanged += SessionOnSessionStateChanged;

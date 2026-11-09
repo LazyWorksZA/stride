@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,17 +8,17 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Stride.Core.Assets;
 using Stride.Core.Assets.Editor.Services;
-using Stride.Core.Assets.Editor.ViewModel;
 using Stride.Core.Extensions;
 using Stride.Assets;
 using Stride.Core.Annotations;
 using Stride.Editor.Preview.View;
-using Stride.Editor.Preview.ViewModel;
 using Stride.Engine;
 using Stride.Graphics;
 using Stride.Rendering.Compositing;
 using Stride.Core.Presentation.ViewModels;
 using Stride.Editor.Annotations;
+using Stride.Core.Assets.Presentation.ViewModels;
+using Stride.Editor.Preview.ViewModels;
 
 namespace Stride.Editor.Preview
 {
@@ -42,6 +43,12 @@ namespace Stride.Editor.Preview
         /// Gets the value indicating if the preview is still running.
         /// </summary>
         protected bool IsRunning { get; private set; }
+
+        /// <summary>
+        /// Gets the view displaying this preview, once <see cref="Initialize(AssetViewModel, IPreviewBuilder)"/> has created it.
+        /// </summary>
+        [CanBeNull]
+        protected IPreviewView PreviewView => previewView;
 
         /// <inheritdoc/>
         public IAssetPreviewViewModel PreviewViewModel { get; protected set; }
@@ -188,11 +195,17 @@ namespace Stride.Editor.Preview
             return Task.FromResult(true);
         }
 
+        /// <summary>
+        /// Raised once <see cref="LoadContent"/> ran, so a view model can read what the preview loaded.
+        /// </summary>
+        public event EventHandler ContentLoaded;
+
         private void LoadContentSafe()
         {
             try
             {
                 LoadContent();
+                ContentLoaded?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception e)
             {

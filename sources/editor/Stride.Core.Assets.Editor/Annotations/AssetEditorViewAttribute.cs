@@ -4,7 +4,7 @@
 using System;
 using Stride.Core.Annotations;
 using Stride.Core.Assets.Editor.Services;
-using Stride.Core.Assets.Editor.ViewModel;
+using Stride.Core.Assets.Editor.ViewModels;
 
 #nullable enable
 
@@ -21,7 +21,7 @@ public abstract class AssetEditorViewAttribute : Attribute
 [AttributeUsage(AttributeTargets.Class)]
 [BaseTypeRequired(typeof(IEditorView))]
 public sealed class AssetEditorViewAttribute<T> : AssetEditorViewAttribute
-    where T : AssetEditorViewModel
+    where T : IAssetEditorViewModel
 {
     /// <summary>
     /// The editor view model type described by this attribute.

@@ -33,7 +33,6 @@ namespace Stride.Graphics
         /// </summary>
         /// <param name="device">The device.</param>
         /// <param name="bytecode">The bytecode.</param>
-        /// <param name="usedParameters">The parameters used to create this shader (from a sdfx).</param>
         /// <exception cref="System.ArgumentNullException">
         /// device
         /// or
@@ -51,8 +50,14 @@ namespace Stride.Graphics
 
             this.graphicsDeviceDefault = device;
             this.bytecode = bytecode;
+            SortKey = (uint)bytecode.ComputeId().GetHashCode();
             Initialize();
         }
+
+        /// <summary>
+        /// A key for sorting draws by effect, from the bytecode content so it is the same in every run.
+        /// </summary>
+        internal uint SortKey { get; private set; }
 
         /// <summary>
         /// Gets the bytecode.

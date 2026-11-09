@@ -6,6 +6,7 @@ using Stride.Core;
 using Stride.Core.Extensions;
 using Stride.Core.Packages;
 using Stride.Core.Presentation.Collections;
+using Stride.Core.Presentation.Commands;
 using Stride.Core.Presentation.Services;
 using Stride.Launcher.Assets.Localization;
 
@@ -29,11 +30,81 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
     /// <param name="localPackage"></param>
     /// <param name="major"></param>
     /// <param name="minor"></param>
-    internal StrideStoreVersionViewModel(MainViewModel launcher, NugetStore store, NugetLocalPackage? localPackage, string packageId, int major, int minor)
-        : base(launcher, store, localPackage, packageId, major, minor)
+    internal StrideStoreVersionViewModel(MainViewModel launcher, NugetStore store, NugetLocalPackage? localPackage, string packageId, int major, int minor, bool isNightly = false)
+        : base(launcher, store, localPackage, packageId, major, minor, isNightly)
     {
+        WhatsNewCommand = new AnonymousTaskCommand(ServiceProvider, ShowWhatsNew);
         FetchReleaseNotes();
         FetchDocumentation();
+    }
+
+    /// <summary>
+    /// Gets the command that shows, for a nightly row (which has no release notes), the changes on GitHub: to the newest
+    /// nightly, from the newest installed nightly, else from the newest release or prerelease before it.
+    /// </summary>
+    public CommandBase WhatsNewCommand { get; }
+
+    /// <summary>
+    /// Gets the tooltip of <see cref="WhatsNewCommand"/>, which names the builds it compares. Refreshed by
+    /// <see cref="UpdateWhatsNewToolTip"/> once the versions are listed (the start can be in another row).
+    /// </summary>
+    public string WhatsNewToolTip => GetWhatsNewRange(out _, out _) switch
+    {
+        { From: { } from } r => string.Format(Strings.ToolTipWhatsNewSince, r.To, from),
+        { } r => string.Format(Strings.ToolTipWhatsNew, r.To),
+        null => string.Empty,
+    };
+
+    internal void UpdateWhatsNewToolTip() => OnPropertyChanged(nameof(WhatsNewToolTip));
+
+    private (PackageVersion? From, PackageVersion To)? GetWhatsNewRange(out List<StrideStoreAlternateVersionViewModel> builds, out List<StrideStoreAlternateVersionViewModel> releases)
+    {
+        builds = AlternateVersions.ToList();
+        // The releases and prereleases of every line, installed or on the feed (local builds have rows of their own)
+        releases = Launcher.StrideVersions.OfType<StrideStoreVersionViewModel>().Where(x => !x.IsNightly)
+            .SelectMany(x => x.AlternateVersions).ToList();
+        return ChooseWhatsNewRange(builds.Select(x => (x.Version, Installed: x.LocalPackage is not null, OnFeed: x.ServerPackage is not null)),
+            releases.Select(x => x.Version));
+    }
+
+    private async Task ShowWhatsNew()
+    {
+        if (GetWhatsNewRange(out var builds, out var releases) is not { } r)
+            return;
+
+        var to = await GetCommit(builds.First(x => x.Version == r.To));
+        var from = r.From is { } fromVersion ? await GetCommit(builds.Concat(releases).First(x => x.Version == fromVersion)) : null;
+        if (to is null)
+            return;
+        Launcher.OpenUrlCommand.Execute(from is not null ? $"{RepositoryUrl}/compare/{from}...{to}" : $"{RepositoryUrl}/commits/{to}");
+    }
+
+    private const string RepositoryUrl = "https://github.com/stride3d/stride";
+
+    // The commit a build was made from: in its nuspec, the installed one or else the one on its feed
+    private async Task<string?> GetCommit(StrideStoreAlternateVersionViewModel build)
+    {
+        if (build.LocalPackage?.RepositoryCommit is { } commit)
+            return commit;
+        return build.ServerPackage is { } serverPackage ? await Store.GetRepositoryCommitAsync(serverPackage, CancellationToken.None) : null;
+    }
+
+    /// <summary>
+    /// Chooses the builds whose changes "What's new" shows: to the newest nightly on the feed (else the newest installed),
+    /// from the newest installed nightly when it's older, else from the newest release or prerelease before it (of any
+    /// line, never a local build: 4.4.0 for a 4.5.0 nightly before the first 4.5 prerelease), else from the nightly before
+    /// it; no "from" when there's none of them.
+    /// </summary>
+    internal static (PackageVersion? From, PackageVersion To)? ChooseWhatsNewRange(IEnumerable<(PackageVersion Version, bool Installed, bool OnFeed)> builds, IEnumerable<PackageVersion> releases)
+    {
+        var ordered = builds.OrderByDescending(x => x.Version).ToList();
+        if (ordered.Count == 0)
+            return null;
+        var to = ordered.FirstOrDefault(x => x.OnFeed) is { Version: not null } onFeed ? onFeed.Version : ordered[0].Version;
+        var from = ordered.FirstOrDefault(x => x.Installed && x.Version < to).Version
+            ?? releases.Where(x => !x.IsLocalBuild && !x.IsNightly && x < to).Max()
+            ?? ordered.FirstOrDefault(x => x.Version < to).Version;
+        return (from, to);
     }
 
     /// <summary>
@@ -77,6 +148,31 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
     /// Gets the full name of this version on the server.
     /// </summary>
     public string ServerVersionFullName => ServerPackage?.Version?.ToString() ?? "";
+
+    /// <summary>
+    /// Gets the text of this version in the list: its name, and whether it isn't installed or has an update. A build
+    /// chosen in the alternate versions is named in full (4.4.0-beta7), as the row is then about that build.
+    /// </summary>
+    public string Label
+    {
+        get
+        {
+            // The default build: the newest installed, else the newest on the server
+            var defaultBuild = AlternateVersions.Where(x => x.LocalPackage is not null).MaxBy(x => x.Version)?.Version ?? LatestServerPackage?.Version;
+            var chosenBuild = Version is not null && defaultBuild is not null && !Version.Equals(defaultBuild);
+            var name = string.Format(Strings.VersionButton, chosenBuild ? $"{PackageSimpleName} {Version}" : ListName);
+            if (!CanDelete)
+                return $"{name} {Strings.VersionButtonUninstalled}";
+            // Chosen on purpose: an update of it isn't news
+            if (chosenBuild)
+                return name;
+            if (CanBeDownloaded && IsLatestPackageRemote)
+                return $"{name} {Strings.VersionButtonUpdateAvailable}";
+            if (CanBeDownloaded && IsLatestPackageLocal)
+                return $"{name} {Strings.VersionButtonLocalUpdateAvailable}";
+            return name;
+        }
+    }
 
     public ObservableList<StrideStoreAlternateVersionViewModel> AlternateVersions { get; } = [];
 
@@ -151,6 +247,9 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
                     else
                         alternateVersionViewModel.UpdateLocalPackage(alternateVersion);
                 });
+                // The label names the default build, which depends on the installed ones
+                OnPropertyChanging(nameof(Label));
+                OnPropertyChanged(nameof(Label));
             });
         }
         Dispatcher.Invoke(UpdateAvailableEditors);
@@ -178,13 +277,17 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
         if (alternateVersions is not null)
         {
             Dispatcher.Invoke(() =>
+            {
                 UpdateAlternateVersions(alternateVersions, (alternateVersionViewModel, alternateVersion) =>
                 {
                     if (alternateVersion is null && alternateVersionViewModel.LocalPackage is null)
                         AlternateVersions.Remove(alternateVersionViewModel);
                     else
                         alternateVersionViewModel.UpdateServerPackage(alternateVersion);
-                }));
+                });
+                OnPropertyChanging(nameof(Label));
+                OnPropertyChanged(nameof(Label));
+            });
         }
     }
 
@@ -198,9 +301,13 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
             StrideStoreAlternateVersionViewModel alternateVersionViewModel;
             if (index < 0)
             {
-                // If not, add it
+                // If not, add it: newest first, as in the list of versions
                 alternateVersionViewModel = new(this);
-                AlternateVersions.Add(alternateVersionViewModel);
+                var insertAt = AlternateVersions.IndexOf(x => x.Version < alternateVersion.Version);
+                if (insertAt < 0)
+                    AlternateVersions.Add(alternateVersionViewModel);
+                else
+                    AlternateVersions.Insert(insertAt, alternateVersionViewModel);
             }
             else
             {
@@ -262,17 +369,17 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
     protected override string UninstallErrorMessage => string.Format(Strings.ErrorUninstallingVersion, FullName);
 
     /// <inheritdoc/>
-    protected override Task UpdateVersionsFromStore()
+    protected override Task UpdateVersionsFromStore(Action<int, int>? unusedPackagesProgress = null)
     {
-        return Launcher.RetrieveAllStrideVersions();
+        return Launcher.RetrieveAllStrideVersions(unusedPackagesProgress);
     }
 
     /// <inheritdoc/>
     protected override void UpdateStatus()
     {
         base.UpdateStatus();
-        OnPropertyChanging(nameof(ServerVersionFullName));
-        OnPropertyChanged(nameof(ServerVersionFullName));
+        OnPropertyChanging(nameof(ServerVersionFullName), nameof(Label));
+        OnPropertyChanged(nameof(ServerVersionFullName), nameof(Label));
     }
 
     /// <inheritdoc/>
@@ -300,7 +407,7 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
     /// expected state once only one editor flavour is published — the failure is swallowed
     /// and the install continues normally.
     /// </remarks>
-    protected override async Task TryInstallCompanionsAsync(PackageVersion version)
+    protected override async Task TryInstallCompanionsAsync(PackageVersion version, ProgressReport progress)
     {
         var companionIds = new[] { GameStudioNames.StrideAvalonia, GameStudioNames.Stride }
             .Where(id => id != ServerPackage?.Id)
@@ -315,7 +422,7 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
 
             try
             {
-                await Store.InstallPackage(companionId, version, [], null);
+                await Store.InstallPackage(companionId, version, [], progress);
             }
             catch
             {
@@ -328,7 +435,9 @@ public sealed class StrideStoreVersionViewModel : StrideVersionViewModel
     protected override void BeforeDownload()
     {
         base.BeforeDownload();
-        ReleaseNotes.Show();
+        // A nightly has no release notes: its changes are on GitHub (WhatsNewCommand)
+        if (!IsNightly)
+            ReleaseNotes.Show();
     }
 
     /// <inheritdoc/>

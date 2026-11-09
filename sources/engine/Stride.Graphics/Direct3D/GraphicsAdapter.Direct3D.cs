@@ -56,10 +56,8 @@ namespace Stride.Graphics
 
         private readonly string driverVersionString = "";
 
-#if STRIDE_GRAPHICS_API_DIRECT3D11
         private GraphicsProfile minimumUnsupportedProfile = (GraphicsProfile) int.MaxValue;
         private GraphicsProfile maximumSupportedProfile;
-#endif
 
         /// <summary>
         ///   Gets the native DXGI adapter.
@@ -88,6 +86,14 @@ namespace Stride.Graphics
         ///   Gets the vendor identifier of this adapter.
         /// </summary>
         public int VendorId  { get; }
+
+        /// <summary>
+        ///   Gets a value indicating whether this adapter is a software rasterizer (WARP, the
+        ///   Microsoft Basic Render Driver) rather than a physical GPU.
+        /// </summary>
+        public bool IsSoftwareAdapter { get; }
+
+        private const uint MicrosoftVendorId = 0x1414;
 
 
         /// <summary>
@@ -153,6 +159,8 @@ namespace Stride.Graphics
             AdapterUid = dxgiAdapterDesc.AdapterLuid.BitCast<Luid, long>();
 
             VendorId = (int) dxgiAdapterDesc.VendorId;
+            // The software flag marks WARP; the Basic Render Driver is not always flagged, hence the Microsoft vendor id.
+            IsSoftwareAdapter = (dxgiAdapterDesc.Flags & (uint) AdapterFlag.Software) != 0 || dxgiAdapterDesc.VendorId == MicrosoftVendorId;
             DedicatedVideoMemory = dxgiAdapterDesc.DedicatedVideoMemory;
             SharedSystemMemory = dxgiAdapterDesc.SharedSystemMemory;
             DedicatedSystemMemory = dxgiAdapterDesc.DedicatedSystemMemory;
@@ -250,9 +258,6 @@ namespace Stride.Graphics
         /// </returns>
         public bool IsProfileSupported(GraphicsProfile graphicsProfile)
         {
-#if STRIDE_GRAPHICS_API_DIRECT3D12
-            return true;
-#else
             // Did we check for this or a higher profile, and it was supported?
             if (maximumSupportedProfile >= graphicsProfile)
                 return true;
@@ -261,34 +266,50 @@ namespace Stride.Graphics
             if (minimumUnsupportedProfile <= graphicsProfile)
                 return false;
 
-            // Check and min/max cached values
+            var featureLevel = (D3DFeatureLevel) graphicsProfile;
 
+#if STRIDE_GRAPHICS_API_DIRECT3D12
+            // Direct3D 12 creates every device at feature level 11_0 or higher
+            if (featureLevel < D3DFeatureLevel.Level110)
+                featureLevel = D3DFeatureLevel.Level110;
+
+            var isSupported = D3D12Runtime.IsFeatureLevelSupported((IUnknown*) dxgiAdapter, featureLevel);
+#else
             var d3d11 = D3D11.GetApi(window: null);
 
             ID3D11Device* device = null;
             ID3D11DeviceContext* deviceContext = null;
 
             D3DFeatureLevel matchedFeatureLevel = 0;
-            var featureLevel = (D3DFeatureLevel) graphicsProfile;
             var featureLevels = stackalloc D3DFeatureLevel[] { featureLevel };
 
-            HResult result = d3d11.CreateDevice(pAdapter: null, D3DDriverType.Hardware, Software: IntPtr.Zero,
+            HResult result = d3d11.CreateDevice((IDXGIAdapter*) dxgiAdapter, D3DDriverType.Unknown, Software: IntPtr.Zero,
                                                 Flags: 0, featureLevels, 1, D3D11.SdkVersion,
                                                 ref device, ref matchedFeatureLevel, ref deviceContext);
 
             ComPtrHelpers.SafeRelease(ref deviceContext);
             ComPtrHelpers.SafeRelease(ref device);
 
-            if (result.IsSuccess && matchedFeatureLevel == featureLevel)
-            {
+            var isSupported = result.IsSuccess && matchedFeatureLevel == featureLevel;
+#endif
+
+            if (isSupported)
                 maximumSupportedProfile = graphicsProfile;
-                return true;
-            }
             else
-            {
                 minimumUnsupportedProfile = graphicsProfile;
-                return false;
-            }
+
+            return isSupported;
+        }
+
+        private partial string GetUnsupportedReason()
+        {
+#if STRIDE_GRAPHICS_API_DIRECT3D12
+            // Creates and releases a device on this adapter
+            return D3D12Runtime.IsEnhancedBarriersSupported(NativeAdapter.AsIUnknown())
+                ? null
+                : $"its driver has no Direct3D 12 Enhanced Barriers. Update it to use this GPU ({D3D12Runtime.EnhancedBarriersDriverVersions}).";
+#else
+            return null;
 #endif
         }
     }

@@ -121,6 +121,22 @@ public sealed partial class PackageVersion : IComparable, IComparable<PackageVer
     /// </summary>
     public string SpecialVersion { get; }
 
+    /// <summary>
+    /// Gets whether this version is a local build: -devN from the checkout ledger (4.4.0-dev3), or appended to a release
+    /// one (4.4.0-beta7-dev4).
+    /// </summary>
+    public bool IsLocalBuild
+        => SpecialVersion is { } label
+           && (label.StartsWith("dev", StringComparison.OrdinalIgnoreCase) || label.Contains("-dev", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Gets whether this version is a nightly build: 4.5.0-nightly.20261014.3, or appended to a prerelease for a package
+    /// with its own version (5.0.1-beta1.nightly.20261014.3).
+    /// </summary>
+    public bool IsNightly
+        => SpecialVersion is { } label
+           && (label.StartsWith("nightly.", StringComparison.OrdinalIgnoreCase) || label.Contains(".nightly.", StringComparison.OrdinalIgnoreCase));
+
     public string[] GetOriginalVersionComponents()
     {
         if (!string.IsNullOrEmpty(originalString))

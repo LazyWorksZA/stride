@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 
 using System;
 using System.IO;
 using Stride.Core.Assets;
+using Stride.Core.Diagnostics;
 using Stride.Core.IO;
 using Stride.Core.Storage;
 
@@ -64,5 +66,10 @@ namespace Stride.Editor.Thumbnails
         /// </summary>
         /// <remarks>This property is equal to <see cref="ObjectId.Empty"/> if <see cref="Result"/> is not <see cref="ThumbnailBuildResult.Succeeded"/>.</remarks>
         public ObjectId ThumbnailId { get; internal set; }
+
+        /// <summary>
+        /// Gets the log of the thumbnail build (without the build of the asset itself).
+        /// </summary>
+        public LoggerResult BuildLog { get; internal set; }
     }
 }

@@ -19,6 +19,7 @@ namespace Stride.Assets.Tests
     /// <summary>
     /// Tests for <see cref="MaterialGenerator"/> and related classes
     /// </summary>
+    [EffectKeys]
     public class TestMaterialGenerator
     {
         public static readonly ValueParameterKey<Color4> DiffuseValueCustom1 = ParameterKeys.NewValue<Color4>();
@@ -959,6 +960,124 @@ Compositions:
             Assert.NotNull(reference);
             Assert.True(reference.IsProxy, "The generator resolved the reference, which the asset compiler relies on staying a proxy.");
             Assert.Equal("/Stride.Engine/StrideEnvironmentLightingDFGLUT16", reference.Url);
+        }
+
+        /// <summary>
+        /// Test the blend states of a thin glass material: each transmittance pass multiplies what is behind
+        /// the glass and leaves the alpha alone, and each reflectance pass is additive.
+        /// </summary>
+        /// <param name="cullMode">The material's cull mode. <see cref="CullMode.None"/> doubles the passes: back faces, then front faces.</param>
+        /// <param name="expectedPasses">The number of passes the material must have.</param>
+        [Theory]
+        [InlineData(CullMode.Back, 2)]
+        [InlineData(CullMode.None, 4)]
+        public void TestThinGlassBlendStates(CullMode cullMode, int expectedPasses)
+        {
+            var context = new MaterialGeneratorContextExtended();
+            var materialDesc = new MaterialDescriptor
+            {
+                Attributes =
+                {
+                    Diffuse = new MaterialDiffuseMapFeature(new ComputeColor(Color.White)),
+                    MicroSurface = new MaterialGlossinessMapFeature(new ComputeFloat(0.95f)),
+                    Specular = new MaterialMetalnessMapFeature(new ComputeFloat(0.08f)),
+                    SpecularModel = new MaterialSpecularThinGlassModelFeature(),
+                    CullMode = cullMode,
+                },
+            };
+
+            var result = MaterialGenerator.Generate(materialDesc, context, "thin_glass");
+            Assert.False(result.HasErrors, result.ToText());
+
+            var passes = result.Material.Passes;
+            Assert.Equal(expectedPasses, passes.Count);
+
+            for (var i = 0; i < passes.Count; i++)
+            {
+                Assert.True(passes[i].HasTransparency);
+                Assert.True(passes[i].BlendState.HasValue, $"Pass {i} has no blend state.");
+
+                var blend = passes[i].BlendState.Value.RenderTargets[0];
+
+                if (i % 2 == 1)
+                {
+                    // Reflectance pass
+                    Assert.Equal(BlendStates.Additive, passes[i].BlendState.Value);
+                    continue;
+                }
+
+                // Transmittance pass
+                Assert.True(blend.BlendEnable, $"Pass {i} does not blend.");
+                Assert.Equal(Blend.Zero, blend.ColorSourceBlend);
+                Assert.Equal(Blend.SourceColor, blend.ColorDestinationBlend);
+                Assert.Equal(Blend.One, blend.AlphaSourceBlend);
+                Assert.Equal(Blend.Zero, blend.AlphaDestinationBlend);
+            }
+        }
+
+        /// <summary>
+        /// Test that each clear coat normal map uses its own flags: the metal flakes pass (pass 0) the metal
+        /// flakes ones, the clear coat pass (pass 1) the orange peel ones.
+        /// </summary>
+        [Fact]
+        public void TestClearCoatNormalMapFlags()
+        {
+            var context = new MaterialGeneratorContextExtended();
+            var materialDesc = new MaterialDescriptor
+            {
+                Attributes =
+                {
+                    Diffuse = new MaterialDiffuseMapFeature(new ComputeColor(Color.Black)),
+                    DiffuseModel = new MaterialDiffuseLambertModelFeature(),
+                    Specular = new MaterialMetalnessMapFeature(new ComputeFloat(0.0f)),
+                    SpecularModel = new MaterialSpecularMicrofacetModelFeature(),
+                    ClearCoat = new MaterialClearCoatFeature
+                    {
+                        // Each layer's flags set the other way round from the other layer's
+                        MetalFlakesScaleAndBias = false,
+                        MetalFlakeslIsXYNormal = true,
+                        OrangePeelScaleAndBias = true,
+                        OrangePeelIsXYNormal = false,
+                    },
+                },
+            };
+
+            var result = MaterialGenerator.Generate(materialDesc, context, "clear_coat");
+            Assert.False(result.HasErrors, result.ToText());
+            Assert.Equal(2, result.Material.Passes.Count);
+
+            // MaterialSurfaceNormalMap<bool TIsNormalXY1, bool TScaleAndBias>
+            Assert.Equal((true, false), NormalMapFlags(result.Material.Passes[0]));
+            Assert.Equal((false, true), NormalMapFlags(result.Material.Passes[1]));
+        }
+
+        private static (bool IsNormalXY1, bool ScaleAndBias) NormalMapFlags(MaterialPass pass)
+        {
+            var normalMaps = new List<ShaderClassSource>();
+            FindShaderClasses(pass.Parameters.Get(MaterialKeys.PixelStageSurfaceShaders), "MaterialSurfaceNormalMap", normalMaps);
+
+            var normalMap = Assert.Single(normalMaps);
+            return (bool.Parse(normalMap.GenericArguments[0]), bool.Parse(normalMap.GenericArguments[1]));
+        }
+
+        private static void FindShaderClasses(ShaderSource source, string className, List<ShaderClassSource> found)
+        {
+            switch (source)
+            {
+                case ShaderClassSource classSource when classSource.ClassName == className:
+                    found.Add(classSource);
+                    break;
+                case ShaderMixinSource mixin:
+                    foreach (var mixinClass in mixin.Mixins)
+                        FindShaderClasses(mixinClass, className, found);
+                    foreach (var composition in mixin.Compositions.Values)
+                        FindShaderClasses(composition, className, found);
+                    break;
+                case ShaderArraySource array:
+                    foreach (var value in array.Values)
+                        FindShaderClasses(value, className, found);
+                    break;
+            }
         }
 
         private class MaterialGeneratorContextExtended : MaterialGeneratorContext

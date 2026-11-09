@@ -550,7 +550,9 @@ namespace Stride.Games
                 var singleFrameElapsedTime = elapsedAdjustedTime;
                 var drawLag = 0L;
 
-                if (suppressDraw || Window.IsMinimized && DrawWhileMinimized == false)
+                bool skipWhileMinimized = Window.IsMinimized && !DrawWhileMinimized;
+                bool presenterCannotPresent = GraphicsDevice?.Presenter?.CanPresentFrame() == false;
+                if (suppressDraw || skipWhileMinimized || presenterCannotPresent)
                 {
                     drawFrame = false;
                     suppressDraw = false;
@@ -809,6 +811,37 @@ namespace Stride.Games
             }
 
             return true;
+        }
+
+        /// <summary>
+        ///   Runs a change that releases the buffers of the presenter, also while a frame records (from <see cref="BeginRun"/> or an update).
+        /// </summary>
+        /// <remarks>
+        ///   What the frame recorded so far uses the old buffers, so it is submitted first; the frame then records again with the new ones.
+        /// </remarks>
+        internal void ChangePresenterBuffers(Action change)
+        {
+            if (!beginDrawOk)
+            {
+                change();
+                return;
+            }
+
+            var commandList = GraphicsContext.CommandList;
+            GraphicsContext.ResourceGroupAllocator.Flush();
+            commandList.Flush();
+
+            try
+            {
+                change();
+            }
+            finally
+            {
+                // Open again even when the change failed: EndDraw closes the frame's Command List
+                commandList.Reset();
+                commandList.ClearState();
+                GraphicsDevice.Presenter?.BeginDraw(commandList);
+            }
         }
 
         /// <summary>

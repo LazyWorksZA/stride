@@ -18,35 +18,28 @@ internal partial class PackageSessionHelper
     {
         try
         {
-            // Solution file: extract projects
-            var solutionDirectory = Path.GetDirectoryName(fullPath) ?? "";
-            var solution = Solution.FromFile(fullPath);
+            // A project opened on its own (a .csproj), else the C# projects of the solution
+            var projectPaths = Path.GetExtension(fullPath).Equals(".csproj", StringComparison.OrdinalIgnoreCase)
+                ? [fullPath]
+                : Solution.FromFile(fullPath).Projects
+                    .Where(project => project.TypeGuid == KnownProjectTypeGuid.CSharp || project.TypeGuid == KnownProjectTypeGuid.CSharpLegacy)
+                    .Select(project => project.FullPath);
 
-            foreach (var project in solution.Projects)
+            foreach (var projectPath in projectPaths)
             {
-                if (project.TypeGuid == KnownProjectTypeGuid.CSharp || project.TypeGuid == KnownProjectTypeGuid.CSharpLegacy)
-                {
-                    var projectPath = project.FullPath;
-                    var projectAssetsJsonPath = Path.Combine(Path.GetDirectoryName(projectPath), "obj", LockFileFormat.AssetsFileName);
 #if !STRIDE_LAUNCHER && !STRIDE_VSPACKAGE
-                    if (!File.Exists(projectAssetsJsonPath))
-                    {
-                        var log = new Stride.Core.Diagnostics.LoggerResult();
-                        await VSProjectHelper.RestoreNugetPackages(log, projectPath);
-                    }
+                var projectAssetsJsonPath = Path.Combine(Path.GetDirectoryName(projectPath), "obj", LockFileFormat.AssetsFileName);
+                if (!File.Exists(projectAssetsJsonPath))
+                {
+                    var log = new Stride.Core.Diagnostics.LoggerResult();
+                    await VSProjectHelper.RestoreNugetPackages(log, projectPath);
+                }
 #endif
-                    if (File.Exists(projectAssetsJsonPath))
-                    {
-                        var format = new LockFileFormat();
-                        var projectAssets = format.Read(projectAssetsJsonPath);
-                        foreach (var library in projectAssets.Libraries)
-                        {
-                            if ((library.Type == "package" || library.Type == "project") && (library.Name == "Stride.Engine" || library.Name == "Xenko.Engine"))
-                            {
-                                return new PackageVersion(library.Version.ToString());
-                            }
-                        }
-                    }
+                // The restored version, or the one written in the project when edited since its restore
+                if (ProjectVersionReader.ReadVersion(projectPath, "Stride.Engine", "Xenko.Engine") is { } version
+                    && PackageVersion.TryParse(version, out var packageVersion))
+                {
+                    return packageVersion;
                 }
             }
         }

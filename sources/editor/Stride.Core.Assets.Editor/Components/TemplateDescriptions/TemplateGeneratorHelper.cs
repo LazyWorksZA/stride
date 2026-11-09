@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 using System;
 using System.Threading.Tasks;
 using Stride.Core.Assets.Editor.Services;
-using Stride.Core.Assets.Editor.ViewModel.Progress;
 using Stride.Core.Assets.Templates;
 using Stride.Core.Translation;
+using Stride.Core.Assets.Editor.ViewModels.Progress;
 
 namespace Stride.Core.Assets.Editor.Components.TemplateDescriptions
 {
@@ -43,11 +44,11 @@ namespace Stride.Core.Assets.Editor.Components.TemplateDescriptions
 
             if (parameters.Logger.HasErrors || !success)
             {
-                workProgress?.ServiceProvider.Get<IEditorDialogService>().ShowProgressWindow(workProgress, 0);
+                workProgress?.ServiceProvider.Get<IProgressWindowService>().ShowProgressWindow(workProgress, 0);
                 return false;
             }
 
-            workProgress?.ServiceProvider.Get<IEditorDialogService>().ShowProgressWindow(workProgress, 500);
+            workProgress?.ServiceProvider.Get<IProgressWindowService>().ShowProgressWindow(workProgress, 500);
 
             var result = await Task.Run(() =>
             {

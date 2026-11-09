@@ -2,24 +2,29 @@
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
 using System;
 using System.Collections.Generic;
+using Stride.Core.Assets.Editor.Components.Properties;
 using Stride.Core.Diagnostics;
 
 #nullable enable
 
-using Stride.Core.Assets.Editor.ViewModel;
+using Stride.Core.Assets.Presentation.Services;
+using Stride.Core.Assets.Presentation.ViewModels;
 
 namespace Stride.Core.Assets.Editor.Services;
-public interface IAssetsPluginService
+public interface IAssetsPluginService : IPresentationPluginService
 {
     IReadOnlyList<AssetsPlugin> Plugins { get; }
 
-    bool HasImagesForEnum(SessionViewModel? session, Type enumType);
+    bool HasImagesForEnum(ISessionViewModel? session, Type enumType);
 
-    object? GetImageForEnum(SessionViewModel? session, object value);
+    object? GetImageForEnum(ISessionViewModel? session, object value);
 
-    IEnumerable<Type> GetPrimitiveTypes(SessionViewModel session);
+    /// <summary>
+    /// Gets the image that the plugins register or declare for <paramref name="type"/> itself (not for its base types), or null.
+    /// </summary>
+    object? GetImageForType(Type type) => null;
 
-    bool HasEditorView(SessionViewModel session, Type viewModelType);
+    bool HasEditorView(ISessionViewModel session, Type viewModelType);
 
     Type? GetAssetViewModelType(Type assetType);
 
@@ -31,5 +36,16 @@ public interface IAssetsPluginService
 
     Type? GetPreviewViewType(Type previewType);
 
-    void RegisterSession(SessionViewModel session, ILogger logger);
+    void RegisterSession(ISessionViewModel session, ILogger logger);
+
+    /// <summary>
+    /// Initializes the registered plugins for the editor of <paramref name="session"/>.
+    /// </summary>
+    void InitializeSession(ISessionViewModel session);
+
+    /// <summary>
+    /// Gets the tools of the views of the game editors that the plugins register (<see cref="IEditorPluginContext.EditorViewToolTypes"/>),
+    /// each type once, in registration order. Safe to read from any thread.
+    /// </summary>
+    IReadOnlyList<Type> GetEditorViewToolTypes() => [];
 }

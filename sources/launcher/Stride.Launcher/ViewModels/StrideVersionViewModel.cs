@@ -4,6 +4,7 @@
 using Stride.Core.Packages;
 using Stride.Core.Presentation.Collections;
 using Stride.Core.Presentation.Commands;
+using Stride.Launcher.Assets.Localization;
 using Stride.Launcher.Services;
 
 namespace Stride.Launcher.ViewModels;
@@ -11,17 +12,18 @@ namespace Stride.Launcher.ViewModels;
 /// <summary>
 /// An implementation of the <see cref="PackageVersionViewModel"/> that represents a major version of Stride.
 /// </summary>
-public abstract class StrideVersionViewModel : PackageVersionViewModel, IComparable<StrideVersionViewModel>, IComparable<Tuple<int, int>>
+public abstract class StrideVersionViewModel : PackageVersionViewModel, IComparable<StrideVersionViewModel>, IComparable<(int Major, int Minor, bool IsNightly)>
 {
     private bool isVisible;
     private bool canStart;
+    private bool isActive;
     private string? selectedEditor;
     // Maps each discovered editor name to its fully-resolved directory (including TFM subfolder).
     // e.g. "Stride.GameStudio.Avalonia.Desktop" → ".../lib/net10.0"
     // Populated by UpdateAvailableEditors; consumed by LocateMainExecutable.
     private readonly Dictionary<string, string> _editorToDir = [];
 
-    internal StrideVersionViewModel(MainViewModel launcher, NugetStore store, NugetLocalPackage? localPackage, string packageId, int major, int minor)
+    internal StrideVersionViewModel(MainViewModel launcher, NugetStore store, NugetLocalPackage? localPackage, string packageId, int major, int minor, bool isNightly = false)
         : base(launcher, store, localPackage)
     {
         PackageSimpleName = packageId
@@ -29,6 +31,8 @@ public abstract class StrideVersionViewModel : PackageVersionViewModel, ICompara
             .Replace(".Avalonia.Desktop", string.Empty);
         Major = major;
         Minor = minor;
+        IsNightly = isNightly;
+        DependentProperties.Add(nameof(FullName), [nameof(StartName)]);
         SetAsActiveCommand = new AnonymousCommand(ServiceProvider, () => launcher.ActiveVersion = this);
     }
 
@@ -122,14 +126,32 @@ public abstract class StrideVersionViewModel : PackageVersionViewModel, ICompara
     public int Minor { get; }
 
     /// <summary>
+    /// Gets whether this version holds the nightly builds of its major.minor (4.5.0-nightly.20261014.3), a row of their own
+    /// next to the releases and prereleases of the same major.minor.
+    /// </summary>
+    public bool IsNightly { get; }
+
+    /// <summary>
     /// Gets the name of this version.
     /// </summary>
-    public override string Name => GetName(PackageSimpleName, Major, Minor);
+    public override string Name => IsNightly ? $"{GetName(PackageSimpleName, Major, Minor)} Nightly" : GetName(PackageSimpleName, Major, Minor);
 
     /// <summary>
     /// Gets the display name of this version.
     /// </summary>
-    public virtual string DisplayName => GetName(PackageSimpleName, Major, Minor, true);
+    public virtual string DisplayName => IsNightly
+        ? string.Format(Strings.VersionNightly, ListName)
+        : ListName;
+
+    /// <summary>
+    /// Gets the name of this version in the version list, where a badge next to it tells a nightly or a local build.
+    /// </summary>
+    public virtual string ListName => GetName(PackageSimpleName, Major, Minor, true);
+
+    /// <summary>
+    /// Gets the name of this version on the Start button.
+    /// </summary>
+    public virtual string StartName => FullName;
 
     /// <summary>
     /// Gets the command that will set the associated package as active.
@@ -145,6 +167,11 @@ public abstract class StrideVersionViewModel : PackageVersionViewModel, ICompara
     /// Gets whether this version can be started.
     /// </summary>
     public bool CanStart { get { return canStart; } private set { SetValue(ref canStart, value); } }
+
+    /// <summary>
+    /// Gets whether this version is the active one, the one the Start button starts. Set by <see cref="MainViewModel.ActiveVersion"/>.
+    /// </summary>
+    public bool IsActive { get { return isActive; } internal set { SetValue(ref isActive, value); } }
 
     /// <summary>
     /// Gets the editors available for this version.
@@ -175,7 +202,9 @@ public abstract class StrideVersionViewModel : PackageVersionViewModel, ICompara
     {
         base.UpdateStatus();
         IsVisible = true;
-        SetAsActiveCommand.IsEnabled = CanDelete;
+        // A version not installed can be selected too, as from its alternate versions: the top button then installs it
+        // (two steps, so that a misclick doesn't start a download)
+        SetAsActiveCommand.IsEnabled = CanDelete || CanBeDownloaded;
         DeleteCommand.IsEnabled = CanDelete;
         // On non-Windows only the Avalonia editor is supported; require it to be present before allowing Start.
         CanStart = CanDelete && (OperatingSystem.IsWindows() || AvailableEditors.Count > 0);
@@ -247,14 +276,20 @@ public abstract class StrideVersionViewModel : PackageVersionViewModel, ICompara
     }
 
     public int CompareTo(StrideVersionViewModel? other)
-    {
-        var r = Major.CompareTo(other?.Major);
-        return r != 0 ? -r : -Minor.CompareTo(other?.Minor);
-    }
+        => other is null ? -1 : Compare((Major, Minor, IsNightly), (other.Major, other.Minor, other.IsNightly));
 
-    public int CompareTo(Tuple<int, int>? other)
+    public int CompareTo((int Major, int Minor, bool IsNightly) other) => Compare((Major, Minor, IsNightly), other);
+
+    /// <summary>
+    /// Orders the rows, newest first: newest major.minor first, the nightly row of a major.minor right before its release
+    /// row (its nightlies are newer than its releases and prereleases).
+    /// </summary>
+    internal static int Compare((int Major, int Minor, bool IsNightly) x, (int Major, int Minor, bool IsNightly) y)
     {
-        var r = Major.CompareTo(other?.Item1);
-        return r != 0 ? -r : -Minor.CompareTo(other?.Item2);
+        var r = x.Major.CompareTo(y.Major);
+        if (r != 0)
+            return -r;
+        r = x.Minor.CompareTo(y.Minor);
+        return r != 0 ? -r : y.IsNightly.CompareTo(x.IsNightly);
     }
 }

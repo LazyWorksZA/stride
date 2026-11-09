@@ -335,11 +335,141 @@ namespace Stride.Launcher.Assets.Localization {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Show nightly builds of Stride.
+        /// </summary>
+        public static string ShowNightlyBuilds {
+            get {
+                return ResourceManager.GetString("ShowNightlyBuilds", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Lists the nightly builds of the development branches in rows of their own.
+        /// </summary>
+        public static string ToolTipShowNightlyBuilds {
+            get {
+                return ResourceManager.GetString("ToolTipShowNightlyBuilds", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Nightly.
+        /// </summary>
+        public static string VersionNightly {
+            get {
+                return ResourceManager.GetString("VersionNightly", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to NIGHTLY.
+        /// </summary>
+        public static string BadgeNightly {
+            get {
+                return ResourceManager.GetString("BadgeNightly", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Nightly builds are built every night from the development branches of Stride. They are not signed, and not tested as much as releases.
+        ///
+        ///Project upgrades might not be fully tested: back up your projects before opening them with a nightly build, and use nightly builds at your own risk.
+        ///
+        ///Show the nightly builds?.
+        /// </summary>
+        public static string AskShowNightlyBuilds {
+            get {
+                return ResourceManager.GetString("AskShowNightlyBuilds", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while changing your NuGet.config: {0}.
+        /// </summary>
+        public static string ErrorChangingNuGetConfig {
+            get {
+                return ResourceManager.GetString("ErrorChangingNuGetConfig", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to What's new in {0}, on GitHub.
+        /// </summary>
+        public static string ToolTipWhatsNew {
+            get {
+                return ResourceManager.GetString("ToolTipWhatsNew", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to What's new in {0} since {1}, on GitHub.
+        /// </summary>
+        public static string ToolTipWhatsNewSince {
+            get {
+                return ResourceManager.GetString("ToolTipWhatsNewSince", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Check for new versions.
+        /// </summary>
+        public static string ToolTipRefreshVersions {
+            get {
+                return ResourceManager.GetString("ToolTipRefreshVersions", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to LOCAL.
+        /// </summary>
+        public static string BadgeLocal {
+            get {
+                return ResourceManager.GetString("BadgeLocal", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Launcher settings.
         /// </summary>
         public static string LauncherSettings {
             get {
                 return ResourceManager.GetString("LauncherSettings", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Theme.
+        /// </summary>
+        public static string ThemeVariant {
+            get {
+                return ResourceManager.GetString("ThemeVariant", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dark.
+        /// </summary>
+        public static string ThemeVariantDark {
+            get {
+                return ResourceManager.GetString("ThemeVariantDark", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Light (preview).
+        /// </summary>
+        public static string ThemeVariantLight {
+            get {
+                return ResourceManager.GetString("ThemeVariantLight", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Follow system.
+        /// </summary>
+        public static string ThemeVariantSystem {
+            get {
+                return ResourceManager.GetString("ThemeVariantSystem", resourceCulture);
             }
         }
 
@@ -463,6 +593,15 @@ namespace Stride.Launcher.Assets.Localization {
                 return ResourceManager.GetString("OpenProjectWithVersion", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open with {0} (upgrade).
+        /// </summary>
+        public static string OpenProjectWithVersionUpgrade {
+            get {
+                return ResourceManager.GetString("OpenProjectWithVersionUpgrade", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Projects.
@@ -473,6 +612,15 @@ namespace Stride.Launcher.Assets.Localization {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Open in IDE.
+        /// </summary>
+        public static string OpenInIDE {
+            get {
+                return ResourceManager.GetString("OpenInIDE", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Remove From List.
         /// </summary>
@@ -499,7 +647,34 @@ namespace Stride.Launcher.Assets.Localization {
                 return ResourceManager.GetString("ReportDeletingVersion", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading ({0})….
+        /// </summary>
+        public static string ReportDownloadingSize {
+            get {
+                return ResourceManager.GetString("ReportDownloadingSize", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Installing ({0} / {1})….
+        /// </summary>
+        public static string ReportInstallingPackages {
+            get {
+                return ResourceManager.GetString("ReportInstallingPackages", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cleaning up ({0} / {1})….
+        /// </summary>
+        public static string ReportRemovingUnusedPackages {
+            get {
+                return ResourceManager.GetString("ReportRemovingUnusedPackages", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Discovering….
         /// </summary>
@@ -634,7 +809,34 @@ namespace Stride.Launcher.Assets.Localization {
                 return ResourceManager.GetString("ShowInExplorer", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
+        public static string OpenProject {
+            get {
+                return ResourceManager.GetString("OpenProject", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Copy solution path.
+        /// </summary>
+        public static string CopySolutionPath {
+            get {
+                return ResourceManager.GetString("CopySolutionPath", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Copy folder path.
+        /// </summary>
+        public static string CopyFolderPath {
+            get {
+                return ResourceManager.GetString("CopyFolderPath", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Start {0}.
         /// </summary>
@@ -735,6 +937,150 @@ namespace Stride.Launcher.Assets.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove {0} from the list (its checkout is kept).
+        /// </summary>
+        public static string ToolTipRemoveDevVersion {
+            get {
+                return ResourceManager.GetString("ToolTipRemoveDevVersion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Remove {0} from the list?....
+        /// </summary>
+        public static string ConfirmRemoveDevVersion {
+            get {
+                return ResourceManager.GetString("ConfirmRemoveDevVersion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open the checkout of {0}.
+        /// </summary>
+        public static string ToolTipOpenCheckout {
+            get {
+                return ResourceManager.GetString("ToolTipOpenCheckout", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Set current version to {0} (built from {1}).
+        /// </summary>
+        public static string ToolTipSetActiveDevVersion {
+            get {
+                return ResourceManager.GetString("ToolTipSetActiveDevVersion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open the Stride solution of {0}.
+        /// </summary>
+        public static string ToolTipOpenSolution {
+            get {
+                return ResourceManager.GetString("ToolTipOpenSolution", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Stride {0} isn&apos;t installed: opening upgrades this project to {1}.
+        /// </summary>
+        public static string ToolTipOpenUpgrades {
+            get {
+                return ResourceManager.GetString("ToolTipOpenUpgrades", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open the folder of {0}.
+        /// </summary>
+        public static string ToolTipOpenFolder {
+            get {
+                return ResourceManager.GetString("ToolTipOpenFolder", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open with another version.
+        /// </summary>
+        public static string ToolTipOpenWithAnotherVersion {
+            get {
+                return ResourceManager.GetString("ToolTipOpenWithAnotherVersion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Uses Stride {0}.
+        /// </summary>
+        public static string ToolTipProjectVersion {
+            get {
+                return ResourceManager.GetString("ToolTipProjectVersion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Opens with Stride {0}.
+        /// </summary>
+        public static string ToolTipProjectOpensWith {
+            get {
+                return ResourceManager.GetString("ToolTipProjectOpensWith", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Opens with Stride {0} (upgrade).
+        /// </summary>
+        public static string ToolTipProjectOpensWithUpgrade {
+            get {
+                return ResourceManager.GetString("ToolTipProjectOpensWithUpgrade", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A newer version is installed: open with it to upgrade.
+        /// </summary>
+        public static string ToolTipOpenWithUpgrade {
+            get {
+                return ResourceManager.GetString("ToolTipOpenWithUpgrade", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Install another version.
+        /// </summary>
+        public static string ToolTipInstallAnotherVersion {
+            get {
+                return ResourceManager.GetString("ToolTipInstallAnotherVersion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Display release notes for this version.
+        /// </summary>
+        public static string ToolTipReleaseNotes {
+            get {
+                return ResourceManager.GetString("ToolTipReleaseNotes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Click to reconnect….
+        /// </summary>
+        public static string ToolTipReconnect {
+            get {
+                return ResourceManager.GetString("ToolTipReconnect", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This project uses Stride {0}, newer than the installed {1}....
+        /// </summary>
+        public static string ErrorVersionTooOld {
+            get {
+                return ResourceManager.GetString("ErrorVersionTooOld", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Uninstall version {0}.
         /// </summary>
         public static string ToolTipUninstall {
@@ -753,14 +1099,23 @@ namespace Stride.Launcher.Assets.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} Visual Studio extension.
+        ///   Looks up a localized string similar to {0} the Visual Studio {1} extension.
         /// </summary>
         public static string ToolTipVisualStudioExtension {
             get {
                 return ResourceManager.GetString("ToolTipVisualStudioExtension", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Visual Studio {0} isn&apos;t installed.
+        /// </summary>
+        public static string ToolTipVisualStudioNotInstalled {
+            get {
+                return ResourceManager.GetString("ToolTipVisualStudioNotInstalled", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Unknown version.
         /// </summary>

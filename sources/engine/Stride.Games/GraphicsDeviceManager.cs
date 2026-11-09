@@ -687,12 +687,6 @@ namespace Stride.Games
                 var leftParams = left.PresentationParameters;
                 var rightParams = right.PresentationParameters;
 
-                // Sort by GraphicsProfile
-                if (left.GraphicsProfile != right.GraphicsProfile)
-                {
-                    return left.GraphicsProfile <= right.GraphicsProfile ? 1 : -1;
-                }
-
                 // Sort by full-screen mode
                 if (leftParams.IsFullScreen != rightParams.IsFullScreen)
                 {
@@ -1151,10 +1145,14 @@ namespace Stride.Games
 
                         try
                         {
-                            GraphicsDevice.Presenter.Resize(newWidth, newHeight, newFormat);
+                            // ApplyChanges can run while a frame records (BeginRun, an update), whose Command List uses the old buffers
+                            game.ChangePresenterBuffers(() =>
+                            {
+                                GraphicsDevice.Presenter.Resize(newWidth, newHeight, newFormat);
 
-                            // Change full screen if needed
-                            GraphicsDevice.Presenter.IsFullScreen = graphicsDeviceInformation.PresentationParameters.IsFullScreen;
+                                // Change full screen if needed
+                                GraphicsDevice.Presenter.IsFullScreen = graphicsDeviceInformation.PresentationParameters.IsFullScreen;
+                            });
                         }
                         // A resize can come from a window event, outside the game loop that reports a lost device
                         catch (Exception ex) when (ex is not GraphicsDeviceException && GraphicsDevice.GraphicsDeviceStatus is var status && status != GraphicsDeviceStatus.Normal)
@@ -1206,9 +1204,9 @@ namespace Stride.Games
 
                 GraphicsDevice = graphicsDeviceFactory.CreateDevice(newInfo);
 
-                // Use the Shader profile returned by the GraphicsDeviceInformation otherwise use the one coming from the GameSettings
-                // TODO: Stale comment?
-                GraphicsDevice.ShaderProfile = ShaderProfile;
+                // Keep the profile the device chose, such as the Intel workaround, when none was set
+                if (ShaderProfile.HasValue)
+                    GraphicsDevice.ShaderProfile = ShaderProfile;
 
                 GraphicsDevice.Disposing += GraphicsDevice_Disposing;
 

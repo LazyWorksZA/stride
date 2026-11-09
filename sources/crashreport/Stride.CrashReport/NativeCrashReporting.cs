@@ -22,7 +22,8 @@ namespace Stride.CrashReport
         private static bool installed;
 
         /// <summary>
-        /// Arms native-crash capture for <paramref name="applicationName"/> (e.g. "GameStudio", "Launcher", "Cli").
+        /// Arms native-crash capture for <paramref name="applicationName"/> (e.g. "GameStudio"). The host must ship
+        /// libstridecrash and a reporter (the Launcher and the CLI don't, so they don't call it).
         /// Safe to call once at startup; later calls are ignored. Off-Windows, under NativeAOT, or when
         /// STRIDE_CRASH_MODE=off, it does nothing.
         /// </summary>
@@ -192,7 +193,7 @@ namespace Stride.CrashReport
 
         // Source-checkout layout: the reporter isn't in the NuGet store (a source-built host doesn't restore its
         // own package), it's built under the checkout. Detect the root the same way the NuGet resolver does — walk
-        // up for build/Stride.slnx — then resolve the reporter from its build output, preferring the configuration
+        // up for Stride.slnx next to sources/ — then resolve the reporter from its build output, preferring the configuration
         // the caller is running under. Its TFM (the xplat-editor net10.0) differs from the host's, so probe each.
         private static string FindReporterInDevTree()
         {
@@ -228,13 +229,13 @@ namespace Stride.CrashReport
             return null;
         }
 
-        // Walks up looking for build/Stride.slnx, the source-checkout marker the NuGet resolver keys on.
+        // Walks up looking for Stride.slnx next to sources/, the source-checkout marker the NuGet resolver keys on.
         private static string FindSourceRoot(string startDirectory)
         {
             var directory = startDirectory;
             while (!string.IsNullOrEmpty(directory))
             {
-                if (File.Exists(Path.Combine(directory, "build", "Stride.slnx")))
+                if (File.Exists(Path.Combine(directory, "Stride.slnx")) && Directory.Exists(Path.Combine(directory, "sources")))
                     return directory;
                 directory = Path.GetDirectoryName(directory);
             }
@@ -272,8 +273,7 @@ namespace Stride.CrashReport
 
         // In a real install the reporter is the Stride.CrashReporter package in the NuGet global store, its publish
         // tree under tools/. Only the version this library was built for (CrashReporterVersion, baked by the csproj)
-        // is launched: Game Studio and the asset compiler depend on exactly that one; a host without the dependency
-        // (Launcher, CLI) captures natively only if some engine install left it there. Probes the store directly, no
+        // is launched: Game Studio and the asset compiler depend on exactly that one. Probes the store directly, no
         // NuGet assemblies in this minimal library. Best-effort: any failure just means "no reporter".
         private static string FindReporterInStore()
         {

@@ -4,30 +4,41 @@
 using System;
 using Stride.Core.Annotations;
 using Stride.Editor.Preview;
-using Stride.Editor.Preview.ViewModel;
+using Stride.Editor.Preview.ViewModels;
 
 #nullable enable
 
 namespace Stride.Editor.Annotations;
 
 /// <summary>
-/// Annotates a type that implements the view model of an asset preview.
+/// Annotates a type that implements the view model of an asset preview. A view model deriving from another one
+/// does not serve its base's previews.
 /// </summary>
-public abstract class AssetPreviewViewModelAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+[BaseTypeRequired(typeof(IAssetPreviewViewModel))]
+public class AssetPreviewViewModelAttribute : Attribute
 {
+    /// <param name="assetPreviewType">The preview type, or an open generic preview base such as
+    /// <c>PreviewFromSpriteBatch&lt;&gt;</c> to serve every preview deriving from it that has no view model of its own.</param>
+    public AssetPreviewViewModelAttribute(Type assetPreviewType)
+    {
+        AssetPreviewType = assetPreviewType;
+    }
+
     /// <summary>
     /// The asset preview type associated with this attribute.
     /// </summary>
-    public abstract Type AssetPreviewType { get; }
+    public Type AssetPreviewType { get; }
 }
 
 /// <inheritdoc />
-[AttributeUsage(AttributeTargets.Class)]
-[BaseTypeRequired(typeof(IAssetPreviewViewModel))]
+// The usage is read from the attribute's own class, not from its base
+[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class AssetPreviewViewModelAttribute<TAssetPreview> : AssetPreviewViewModelAttribute
     where TAssetPreview : IAssetPreview
 {
-    /// <inheritdoc />
-    public override Type AssetPreviewType => typeof(TAssetPreview);
-
+    public AssetPreviewViewModelAttribute()
+        : base(typeof(TAssetPreview))
+    {
+    }
 }

@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,14 +8,13 @@ using Stride.Core.Assets;
 using Stride.Core.Annotations;
 using Stride.Core.Mathematics;
 using Stride.Assets;
+using Stride.Assets.Rendering;
 using Stride.Editor.Engine;
 using Stride.Engine;
 using Stride.Graphics;
-using Stride.Particles.Rendering;
 using Stride.Rendering;
 using Stride.Rendering.Compositing;
 using Stride.Rendering.Lights;
-using Stride.SpriteStudio.Runtime;
 
 namespace Stride.Editor.Thumbnails
 {
@@ -51,33 +51,7 @@ namespace Stride.Editor.Thumbnails
             var opaqueStage = result.RenderStages.First(x => x.Name.Equals("Opaque"));
             var transparentStage = result.RenderStages.First(x => x.Name.Equals("Transparent"));
 
-            // Add particles, UI and SpriteStudio renderers
-            result.RenderFeatures.Add(
-                new ParticleEmitterRenderFeature
-                {
-                    RenderStageSelectors =
-                    {
-                        new ParticleEmitterTransparentRenderStageSelector
-                        {
-                            EffectName = "Particles",
-                            OpaqueRenderStage = opaqueStage,
-                            TransparentRenderStage = transparentStage,
-                        }
-                    },
-                });
-
-            result.RenderFeatures.Add(
-                new SpriteStudioRenderFeature
-                {
-                    RenderStageSelectors =
-                    {
-                        new SimpleGroupToRenderStageSelector()
-                        {
-                            EffectName = "SpriteStudio",
-                            RenderStage = transparentStage,
-                        }
-                    }
-                });
+            RenderFeatureProviders.AddPackageRenderFeatures(result, opaqueStage, transparentStage);
 
             return result;
         }

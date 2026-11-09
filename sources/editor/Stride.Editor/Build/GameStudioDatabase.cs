@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Stride.Core.Assets;
 using Stride.Core.Assets.Analysis;
@@ -23,7 +26,7 @@ namespace Stride.Editor.Build
         private readonly Dictionary<ObjectUrl, OutputObject> database = new Dictionary<ObjectUrl, OutputObject>();
         private readonly HashSet<string> pendingReplacementTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly object assetReplacementsLock = new object();
-        private Dictionary<string, AssetItem> cachedAssetReplacements;
+        private Dictionary<string, AssetItem>? cachedAssetReplacements;
         private bool assetReplacementsValid;
         private readonly GameStudioBuilderService assetBuilderService;
         private readonly GameSettingsProviderService settingsProvider;
@@ -49,8 +52,8 @@ namespace Stride.Editor.Build
             UpdateGameSettings(settingsProvider.CurrentGameSettings);
             settingsProvider.GameSettingsChanged += OnGameSettingsChanged;
 
-            ((AssetDependencyManager)assetBuilderService.SessionViewModel.DependencyManager).AssetChanged += OnAssetChanged;
-            assetBuilderService.SessionViewModel.AssetReplacementsChanged += OnAssetReplacementsChanged;
+            ((AssetDependencyManager)assetBuilderService.Session.DependencyManager).AssetChanged += OnAssetChanged;
+            assetBuilderService.Session.AssetReplacementsChanged += OnAssetReplacementsChanged;
         }
 
         private void OnAssetChanged(AssetItem sender, bool oldValue, bool newValue)
@@ -61,7 +64,7 @@ namespace Stride.Editor.Build
             //}
         }
 
-        private void OnAssetReplacementsChanged(object sender, EventArgs e)
+        private void OnAssetReplacementsChanged(object? sender, EventArgs e)
         {
             lock (assetReplacementsLock)
                 assetReplacementsValid = false;
@@ -72,17 +75,30 @@ namespace Stride.Editor.Build
             isDisposed = true;
             databaseLock.Dispose();
             settingsProvider.GameSettingsChanged -= OnGameSettingsChanged;
-            assetBuilderService.SessionViewModel.AssetReplacementsChanged -= OnAssetReplacementsChanged;
-            ((AssetDependencyManager)assetBuilderService.SessionViewModel.DependencyManager).AssetChanged -= OnAssetChanged;
+            assetBuilderService.Session.AssetReplacementsChanged -= OnAssetReplacementsChanged;
+            ((AssetDependencyManager)assetBuilderService.Session.DependencyManager).AssetChanged -= OnAssetChanged;
             CompilerContext.Dispose();
             database.Clear();
         }
 
-        public ILogger Logger { get; }
+        public ILogger? Logger { get; }
 
         public Task<ISyncLockable> ReserveSyncLock() => databaseLock.ReserveSyncLock();
 
         public Task<IDisposable> LockAsync() => databaseLock.LockAsync();
+
+        /// <summary>
+        /// Analyzes the build dependencies of an asset in the compilation context of the editor games.
+        /// </summary>
+        /// <param name="assetItem">The asset to analyze.</param>
+        /// <returns>The build node of the asset, whose <see cref="BuildAssetNode.References"/> tell which assets it depends on, and how.</returns>
+        /// <remarks>The caller holds the lock of the database (<see cref="ReserveSyncLock"/>).</remarks>
+        public BuildAssetNode AnalyzeDependencies(AssetItem assetItem)
+        {
+            var node = AssetDependenciesCompiler.BuildDependencyManager.FindOrCreateNode(assetItem, typeof(AssetCompilationContext));
+            node.Analyze(CompilerContext);
+            return node;
+        }
 
         public async Task<IDisposable> MountInCurrentMicroThread()
         {
@@ -103,7 +119,18 @@ namespace Stride.Editor.Build
             return Build(asset, GetAssetReplacements(asset.Package?.Session));
         }
 
-        private Dictionary<string, AssetItem> GetAssetReplacements(PackageSession session)
+        /// <summary>
+        /// Gets the compiled object the database holds for a URL, outside of a micro-thread (the tests look at the redirects).
+        /// </summary>
+        internal async Task<OutputObject?> GetOutputAsync(ObjectUrl url)
+        {
+            using ((await databaseLock.ReserveSyncLock()).Lock())
+            {
+                return database.TryGetValue(url, out var output) ? output : null;
+            }
+        }
+
+        private Dictionary<string, AssetItem>? GetAssetReplacements(PackageSession? session)
         {
             lock (assetReplacementsLock)
             {
@@ -116,7 +143,7 @@ namespace Stride.Editor.Build
             }
         }
 
-        private async Task Build(AssetItem asset, Dictionary<string, AssetItem> assetReplacements)
+        private async Task Build(AssetItem asset, Dictionary<string, AssetItem>? assetReplacements)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(GameStudioDatabase));
@@ -163,12 +190,12 @@ namespace Stride.Editor.Build
         /// Redirects the database entries of replaced URLs found among the build outputs to their
         /// replacement's compiled content, so the editor game resolves them like the built game does.
         /// </summary>
-        private async Task ApplyAssetReplacements(EditorGameBuildUnit buildUnit, Dictionary<string, AssetItem> assetReplacements)
+        private async Task ApplyAssetReplacements(EditorGameBuildUnit buildUnit, Dictionary<string, AssetItem>? assetReplacements)
         {
             if (assetReplacements == null || buildUnit.Failed)
                 return;
 
-            List<(ObjectUrl Target, AssetItem Replacement)> toApply = null;
+            List<(ObjectUrl Target, AssetItem Replacement)>? toApply = null;
             foreach (var output in buildUnit.OutputObjects)
             {
                 if (output.Key.Type == UrlType.Content
@@ -214,17 +241,26 @@ namespace Stride.Editor.Build
             }
         }
 
-        private void OnGameSettingsChanged(object sender, GameSettingsChangedEventArgs e)
+        private void OnGameSettingsChanged(object? sender, GameSettingsChangedEventArgs e)
         {
             UpdateGameSettings(e.GameSettings);
         }
 
+        /// <summary>
+        /// Copies the game's rendering mode, color space, graphics profile and <see cref="GameSettingsDependencyAttribute"/> sections into the settings the editor compiles with.
+        /// </summary>
         private void UpdateGameSettings(GameSettingsAsset currentGameSettings)
         {
             databaseGameSettings.GetOrCreate<EditorSettings>().RenderingMode = currentGameSettings.GetOrCreate<EditorSettings>().RenderingMode;
             databaseGameSettings.GetOrCreate<RenderingSettings>().ColorSpace = currentGameSettings.GetOrCreate<RenderingSettings>().ColorSpace;
-            databaseGameSettings.GetOrCreate<Navigation.NavigationSettings>().Groups = currentGameSettings.GetOrDefault<Navigation.NavigationSettings>().Groups;
             databaseGameSettings.GetOrCreate<RenderingSettings>().DefaultGraphicsProfile = currentGameSettings.GetOrCreate<RenderingSettings>().DefaultGraphicsProfile;
+            foreach (var sectionType in GameSettingsDependencyAttribute.GetDeclaredSections())
+            {
+                databaseGameSettings.Defaults.RemoveAll(sectionType.IsInstanceOfType);
+                var section = currentGameSettings.Defaults.FirstOrDefault(sectionType.IsInstanceOfType);
+                if (section != null)
+                    databaseGameSettings.Defaults.Add(AssetCloner.Clone(section));
+            }
         }
     }
 }

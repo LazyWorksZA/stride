@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -31,7 +32,7 @@ public sealed record SymbolRewrite(
 /// Factory helpers for declaring code migrations. Import with
 /// <c>using static Stride.Assets.CodeUpgrades;</c> so registrations read as intent.
 /// </summary>
-public static class CodeUpgrades
+public static partial class CodeUpgrades
 {
     /// <summary>
     /// Batches symbol rewrites into one <see cref="CodeUpgrade"/>: all symbols are resolved and their
@@ -223,11 +224,34 @@ public static class CodeUpgrades
     }
 
     /// <summary>
+    /// Migrates an instance member renamed on its type: <c>x.Foo(a)</c> → <c>x.Bar(a)</c>. Matches the member
+    /// <paramref name="memberName"/> on <paramref name="declaringType"/> (its full metadata name) and renames each
+    /// reference, keeping its receiver, arguments and trivia; conditional access and method groups too.
+    /// </summary>
+    public static SymbolRewrite MemberRename(string declaringType, string memberName, string newMemberName)
+    {
+        ArgumentNullException.ThrowIfNull(declaringType);
+        ArgumentNullException.ThrowIfNull(memberName);
+        ArgumentNullException.ThrowIfNull(newMemberName);
+        return new SymbolRewrite(
+            compilation => ResolveMembers(compilation, declaringType, memberName),
+            (editor, referenceNode, symbol) =>
+            {
+                if (referenceNode is not SimpleNameSyntax name || name.Identifier.ValueText != memberName)
+                    return;
+
+                // WithIdentifier keeps the type argument list of a generic name
+                editor.ReplaceNode(name, name.WithIdentifier(SyntaxFactory.Identifier(name.Identifier.LeadingTrivia, newMemberName, name.Identifier.TrailingTrivia)));
+            });
+    }
+
+    /// <summary>
     /// Migrates a removed method that returned its receiver, so that the call can simply go:
     /// <c>Buffer.New(...).RecreateWith(data)</c> → <c>Buffer.New(...)</c>. Matches the method
     /// <paramref name="methodName"/> on <paramref name="declaringType"/> (its full metadata name) and
     /// replaces each invocation by its receiver, preserving trivia. Also handles conditional access
     /// (<c>x?.Foo(a)</c> → <c>x</c>). Other reference forms (method groups, cref) are left untouched.
+    /// A removed method that returned nothing fits too: its calls are statements, which go.
     /// </summary>
     public static SymbolRewrite FluentCallRemove(string declaringType, string methodName)
     {
@@ -403,6 +427,71 @@ public static class CodeUpgrades
     }
 
     /// <summary>
+    /// Migrates an instance member that became an extension member in <paramref name="extensionNamespace"/>: bare uses get
+    /// <c>this.</c> and the file gets the <c>using</c>. With <paramref name="throughMember"/>, uses go through that member (<c>x.Game.Audio</c>).
+    /// </summary>
+    public static SymbolRewrite MemberToExtension(string declaringType, string memberName, string extensionNamespace, string throughMember = null)
+    {
+        ArgumentNullException.ThrowIfNull(declaringType);
+        ArgumentNullException.ThrowIfNull(memberName);
+        ArgumentNullException.ThrowIfNull(extensionNamespace);
+        return new SymbolRewrite(
+            compilation => ResolveMembers(compilation, declaringType, memberName),
+            (editor, referenceNode, symbol) =>
+            {
+                // The member's own name only (not an alias or another node the reference search returns)
+                if (referenceNode is not SimpleNameSyntax name || name.Identifier.ValueText != memberName)
+                    return;
+
+                var member = name.WithoutTrivia();
+                switch (name.Parent)
+                {
+                    // x.Audio, this.Audio, base.Audio: base. becomes this. (base can't reach an extension member)
+                    case MemberAccessExpressionSyntax access when access.Name == name:
+                        if (throughMember is not null)
+                            editor.ReplaceNode(access, Access(Access(access.Expression, SyntaxFactory.IdentifierName(throughMember)), member).WithTriviaFrom(access));
+                        else if (access.Expression is BaseExpressionSyntax)
+                            editor.ReplaceNode(access, Access(SyntaxFactory.ThisExpression(), member).WithTriviaFrom(access));
+                        break;
+
+                    // x?.Audio
+                    case MemberBindingExpressionSyntax binding:
+                        if (throughMember is not null)
+                            editor.ReplaceNode(binding, Access(SyntaxFactory.MemberBindingExpression(SyntaxFactory.IdentifierName(throughMember)), member).WithTriviaFrom(binding));
+                        break;
+
+                    // A name in a type context (cref, qualified name): left alone
+                    case QualifiedNameSyntax qualified when qualified.Right == name:
+                    case NameMemberCrefSyntax:
+                        break;
+
+                    // Not an expression: a property pattern's name ({ Audio: ... }), a named argument or initializer
+                    case NameColonSyntax:
+                    case NameEqualsSyntax:
+                        break;
+
+                    // A bare use in a derived type needs an explicit receiver
+                    default:
+                        ExpressionSyntax receiver = throughMember is null ? SyntaxFactory.ThisExpression() : SyntaxFactory.IdentifierName(throughMember);
+                        editor.ReplaceNode(name, Access(receiver, member).WithTriviaFrom(name));
+                        break;
+                }
+
+                // Import the namespace once per file (the callback sees the root as edited so far)
+                editor.ReplaceNode(editor.OriginalRoot, (root, _) =>
+                {
+                    if (root is not CompilationUnitSyntax unit || unit.Usings.Any(x => x.Name?.ToString() == extensionNamespace))
+                        return root;
+                    var directive = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(extensionNamespace)).NormalizeWhitespace().WithTrailingTrivia(SyntaxFactory.EndOfLine(Environment.NewLine));
+                    return unit.AddUsings(directive);
+                });
+            });
+    }
+
+    private static MemberAccessExpressionSyntax Access(ExpressionSyntax receiver, SimpleNameSyntax member)
+        => SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, receiver, member);
+
+    /// <summary>
     /// Removes <c>using</c> directives for namespaces that left the Stride dependency closure
     /// (each entry matches itself and its sub-namespaces). Only directives the compiler reports as
     /// unnecessary (CS8019, checked against the old-version closure) are removed: an unused directive is
@@ -452,6 +541,78 @@ public static class CodeUpgrades
             }
             return solution;
         };
+    }
+
+    /// <summary>
+    /// True when <paramref name="type"/> is <paramref name="baseType"/> or derives from it (generic instances included).
+    /// </summary>
+    internal static bool DerivesFrom(ITypeSymbol type, INamedTypeSymbol baseType)
+    {
+        for (var current = type; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, baseType))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// True when a part of <paramref name="type"/> has an attribute written <paramref name="name"/> or
+    /// <c>{name}Attribute</c>, qualified or not. Matched on the syntax, so it works for an attribute that doesn't
+    /// exist in the old-version closure.
+    /// </summary>
+    internal static bool HasAttributeNamed(INamedTypeSymbol type, string name, CancellationToken cancellationToken)
+    {
+        foreach (var reference in type.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax(cancellationToken) is not TypeDeclarationSyntax declaration)
+                continue;
+            foreach (var attribute in declaration.AttributeLists.SelectMany(x => x.Attributes))
+            {
+                var written = attribute.Name switch
+                {
+                    QualifiedNameSyntax qualified => qualified.Right.Identifier.ValueText,
+                    AliasQualifiedNameSyntax aliasQualified => aliasQualified.Name.Identifier.ValueText,
+                    SimpleNameSyntax simple => simple.Identifier.ValueText,
+                    _ => null,
+                };
+                if (written == name || written == name + "Attribute")
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// True when names of namespace <paramref name="ns"/> resolve unqualified at <paramref name="node"/>: it is the
+    /// namespace of <paramref name="type"/> or one around it, or a <c>using</c> (also global) visible there.
+    /// </summary>
+    internal static bool IsNamespaceInScope(SemanticModel semanticModel, SyntaxNode node, INamedTypeSymbol type, string ns, CancellationToken cancellationToken)
+    {
+        if (ns is null)
+            return true;
+        for (var current = type.ContainingNamespace; current is { IsGlobalNamespace: false }; current = current.ContainingNamespace)
+        {
+            if (current.ToDisplayString() == ns)
+                return true;
+        }
+        return semanticModel.GetImportScopes(node.SpanStart, cancellationToken)
+            .Any(scope => scope.Imports.Any(x => x.NamespaceOrType is INamespaceSymbol imported && imported.ToDisplayString() == ns));
+    }
+
+    /// <summary>
+    /// Adds <c>[name]</c> as the first attribute list of <paramref name="declaration"/>, on its own line: the list takes
+    /// the declaration's leading trivia (comments, indentation) and the declaration keeps the indentation.
+    /// </summary>
+    internal static TypeDeclarationSyntax AddAttributeList(TypeDeclarationSyntax declaration, string name, SyntaxTrivia endOfLine)
+    {
+        var leading = declaration.GetLeadingTrivia();
+        var indentation = leading.Reverse().TakeWhile(x => x.IsKind(SyntaxKind.WhitespaceTrivia)).Reverse();
+        var attributeList = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Attribute(SyntaxFactory.ParseName(name))))
+            .WithLeadingTrivia(leading)
+            .WithTrailingTrivia(endOfLine);
+        declaration = declaration.WithLeadingTrivia(SyntaxFactory.TriviaList(indentation));
+        return declaration.WithAttributeLists(declaration.AttributeLists.Insert(0, attributeList));
     }
 
     /// <summary>

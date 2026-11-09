@@ -1,69 +1,48 @@
-// Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
+// Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 
-using System.Threading.Tasks;
-using Stride.Core.Assets.Editor.ViewModel;
+using System.Diagnostics.CodeAnalysis;
+using Stride.Core.Assets.Editor.ViewModels;
+using Stride.Core.Assets.Presentation.ViewModels;
 
-namespace Stride.Core.Assets.Editor.Services
+namespace Stride.Core.Assets.Editor.Services;
+
+/// <summary>
+/// Opens, finds and closes the asset editors of the session. The cross-platform editor implements it with
+/// <see cref="EditorCollectionViewModel"/>; the WPF editor with its docking windows.
+/// </summary>
+public interface IAssetEditorsManager
 {
     /// <summary>
-    /// An interface representing a service that can open and close editor instances for assets.
+    /// Opens the editor of the given asset, or brings it to the front when it is open already.
     /// </summary>
-    public interface IAssetEditorsManager
-    {
-        /// <summary>
-        /// Immediately closes all open asset editor windows.
-        /// </summary>
-        /// <param name="save">True if files should be saved, false if files can be closed without asking user, null if user should be asked.</param>
-        /// <returns>True if all windows succesfully closed, false if user interrupted (should only happen when <see cref="save"/> is null).</returns>
-        bool CloseAllEditorWindows(bool? save);
+    /// <param name="asset">The asset to edit.</param>
+    /// <returns>A task that completes when the editor is open.</returns>
+    Task OpenAssetEditorAsync(AssetViewModel asset);
 
-        /// <summary>
-        /// Immediately closes all editor windows that are hidden.
-        /// </summary>
-        void CloseAllHiddenWindows();
+    /// <summary>
+    /// Closes the editor of an asset once it agrees: it saves its changes or drops them as <paramref name="save"/> says, or as
+    /// the user chooses when it is <c>null</c>.
+    /// </summary>
+    /// <param name="asset">The asset whose editor closes.</param>
+    /// <param name="save"><c>true</c> to save the changes, <c>false</c> to drop them, <c>null</c> to ask the user.</param>
+    /// <returns><c>true</c> when the editor is closed or the asset has none, <c>false</c> when the user kept it open.</returns>
+    Task<bool> CloseAssetEditorAsync(AssetViewModel asset, bool? save);
 
-        /// <summary>
-        /// Closes the curve editor window.
-        /// </summary>
-        void CloseCurveEditorWindow();
+    /// <summary>
+    /// Closes every editor, see <see cref="CloseAssetEditorAsync"/>.
+    /// </summary>
+    /// <param name="save"><c>true</c> to save the changes, <c>false</c> to drop them, <c>null</c> to ask the user.</param>
+    /// <returns><c>true</c> when every editor is closed, <c>false</c> when the user kept one open.</returns>
+    Task<bool> CloseAllEditorsAsync(bool? save);
 
-        /// <summary>
-        /// Closes the editor window for the given asset. If no editor window for this asset exists, this method does nothing.
-        /// </summary>
-        /// <param name="asset">The asset for which to close the editor window.</param>
-        /// <param name="save">True if file should be saved, false if file can be closed without asking user, null if user should be asked.</param>
-        /// <returns>True if windows could be closed, false if user interrupted (should only happen when <see cref="save"/> is null).</returns>
-        bool CloseAssetEditorWindow(AssetViewModel asset, bool? save);
-
-        /// <summary>
-        /// Immediately hides all editor windows.
-        /// </summary>
-        void HideAllAssetEditorWindows();
-
-        /// <summary>
-        /// Opens (and activates) an editor window for the given <paramref name="curve"/>.
-        /// </summary>
-        /// <remarks>
-        /// If the curve editor is already opened, adds the curve to the editor and activates it.
-        /// </remarks>
-        /// <param name="curve">The curve to show in the curve editor.</param>
-        /// <param name="name">The name to display in the curve editor.</param>
-        void OpenCurveEditorWindow(object curve, string name);
-
-        /// <summary>
-        /// Opens (and activates) an editor window for the given asset. If an editor window for this asset already exists, simply activates it.
-        /// </summary>
-        /// <param name="asset">The asset for which to show an editor window.</param>
-        Task OpenAssetEditorWindow(AssetViewModel asset);
-
-        /// <summary>
-        /// Try to find an opened editor for the given asset.
-        /// </summary>
-        /// <typeparam name="TEditor"></typeparam>
-        /// <param name="asset"></param>
-        /// <param name="assetEditor"></param>
-        /// <returns></returns>
-        bool TryGetAssetEditor<TEditor>(AssetViewModel asset, out TEditor assetEditor) where TEditor : IAssetEditorViewModel;
-    }
+    /// <summary>
+    /// Try to find an opened editor for the given asset.
+    /// </summary>
+    /// <typeparam name="TEditor"></typeparam>
+    /// <param name="asset"></param>
+    /// <param name="assetEditor"></param>
+    /// <returns></returns>
+    bool TryGetAssetEditor<TEditor>(AssetViewModel asset, [MaybeNullWhen(false)] out TEditor assetEditor) where TEditor : IAssetEditorViewModel;
 }

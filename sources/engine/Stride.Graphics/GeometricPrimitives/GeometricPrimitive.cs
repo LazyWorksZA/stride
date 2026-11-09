@@ -91,9 +91,9 @@ namespace Stride.Graphics.GeometricPrimitives
             }
             else
             {
-                if (graphicsDevice.Features.CurrentProfile <= GraphicsProfile.Level_9_3)
+                if (!graphicsDevice.Features.HasIndex32Bits)
                 {
-                    throw new InvalidOperationException("Cannot generate more than 65535 indices on feature level HW <= 9.3");
+                    throw new InvalidOperationException("Cannot generate more than 65535 indices: this device does not support 32-bit index buffers.");
                 }
 
                 IndexBuffer = Buffer.Index.New(graphicsDevice, indices).DisposeBy(this);
@@ -111,7 +111,8 @@ namespace Stride.Graphics.GeometricPrimitives
         /// <summary>
         /// Draws this <see cref="GeometricPrimitive" />.
         /// </summary>
-        /// <param name="commandList">The command list.</param>
+        /// <param name="graphicsContext">The graphics context used for drawing.</param>
+        /// <param name="effectInstance">The effect used to draw the primitive.</param>
         public void Draw(GraphicsContext graphicsContext, EffectInstance effectInstance)
         {
             var commandList = graphicsContext.CommandList;

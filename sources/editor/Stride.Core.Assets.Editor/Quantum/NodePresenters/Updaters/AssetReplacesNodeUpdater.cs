@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net)
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+#nullable disable
 using Stride.Core.Assets.Analysis;
 using Stride.Core.Assets.Editor.Services;
-using Stride.Core.Assets.Editor.ViewModel;
+using Stride.Core.Assets.Presentation.Quantum.NodePresenters;
+using Stride.Core.Assets.Presentation.ViewModels;
+using Stride.Core.Assets.Presentation.Services;
 
 namespace Stride.Core.Assets.Editor.Quantum.NodePresenters.Updaters
 {
@@ -46,7 +49,7 @@ namespace Stride.Core.Assets.Editor.Quantum.NodePresenters.Updaters
         /// Finds the asset that replaces <paramref name="targetId"/> via the incoming Replace links.
         /// At most one replacement per asset is valid.
         /// </summary>
-        private static AssetViewModel FindReplacer(SessionViewModel session, AssetId targetId)
+        private static AssetViewModel FindReplacer(ISessionViewModel session, AssetId targetId)
         {
             var dependencies = session.DependencyManager.ComputeDependencies(targetId, AssetDependencySearchOptions.In, ContentLinkType.Replace);
             if (dependencies == null)

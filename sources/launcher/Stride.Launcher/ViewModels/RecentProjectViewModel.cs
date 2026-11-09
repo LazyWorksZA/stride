@@ -2,6 +2,8 @@
 // Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System.Diagnostics;
+using Avalonia.Input.Platform;
+using Stride.Core;
 using Stride.Core.Assets;
 using Stride.Core.Extensions;
 using Stride.Core.IO;
@@ -21,6 +23,10 @@ public sealed class RecentProjectViewModel : DispatcherViewModel
     private Version? strideVersion;
     // The exact version the project references (4.4.0-dev3); an installed version with that name is preferred.
     private string? stridePackageVersion;
+    private PackageVersion? projectVersion;
+    private string? upgradeToolTip;
+    private bool hasUpgradeOption;
+    private OpenWithOption? defaultOption;
 
     internal RecentProjectViewModel(MainViewModel launcher, UFile path)
         : base(launcher.SafeArgument(nameof(launcher)).ServiceProvider)
@@ -30,8 +36,11 @@ public sealed class RecentProjectViewModel : DispatcherViewModel
         fullPath = path;
         strideVersionName = Strings.ReportDiscovering;
         OpenCommand = new AnonymousTaskCommand(ServiceProvider, () => OpenWith(null)) { IsEnabled = false };
-        OpenWithCommand = new AnonymousTaskCommand<StrideVersionViewModel>(ServiceProvider, OpenWith);
+        OpenWithCommand = new AnonymousTaskCommand<OpenWithOption>(ServiceProvider, OpenWith);
         ExploreCommand = new AnonymousCommand(ServiceProvider, Explore);
+        OpenInIDECommand = new AnonymousCommand(ServiceProvider, OpenInIDE);
+        CopySolutionPathCommand = new AnonymousTaskCommand(ServiceProvider, () => CopyToClipboard(FullPath));
+        CopyFolderPathCommand = new AnonymousTaskCommand(ServiceProvider, () => CopyToClipboard(FolderPath));
         RemoveCommand = new AnonymousCommand(ServiceProvider, Remove);
         CompatibleVersions = [];
         DiscoverStrideVersion();
@@ -41,15 +50,68 @@ public sealed class RecentProjectViewModel : DispatcherViewModel
 
     public string FullPath => fullPath.ToOSPath();
 
+    /// <summary>
+    /// Gets the folder of the project's solution.
+    /// </summary>
+    public string FolderPath => Path.GetDirectoryName(FullPath) ?? FullPath;
+
     public string StrideVersionName { get { return strideVersionName; } private set { SetValue(ref strideVersionName, value); } }
+
+    /// <summary>
+    /// Gets the version shown for the project, as the list of versions names it: its major.minor (4.4), or the full
+    /// version of a local build (4.4.0-dev3).
+    /// </summary>
+    public string? StrideVersionDisplayName => projectVersion is { IsLocalBuild: true } ? stridePackageVersion : StrideVersionName;
 
     public Version? StrideVersion { get { return strideVersion; } private set { SetValue(ref strideVersion, value); } }
 
     public MainViewModel Launcher { get; }
 
-    public ObservableList<StrideVersionViewModel> CompatibleVersions { get; private set; }
+    /// <summary>
+    /// Gets the other versions the project can be opened with.
+    /// </summary>
+    public ObservableList<OpenWithOption> CompatibleVersions { get; private set; }
+
+    /// <summary>
+    /// Gets the tooltip telling that a click upgrades the project, or null when it doesn't.
+    /// </summary>
+    public string? UpgradeToolTip { get { return upgradeToolTip; } private set { SetValue(ref upgradeToolTip, value); } }
+
+    /// <summary>
+    /// Gets whether one of <see cref="CompatibleVersions"/> upgrades the project to a release.
+    /// </summary>
+    public bool HasUpgradeOption { get { return hasUpgradeOption; } private set { SetValue(ref hasUpgradeOption, value, nameof(HasUpgradeOption), nameof(OpenWithToolTip)); } }
+
+    public string OpenWithToolTip => HasUpgradeOption ? Strings.ToolTipOpenWithUpgrade : Strings.ToolTipOpenWithAnotherVersion;
+
+    /// <summary>
+    /// Gets the tooltip of the project: its path, its full version, and the version a click opens it with when another.
+    /// </summary>
+    public string ToolTip
+    {
+        get
+        {
+            var lines = new List<string> { FullPath };
+            if (projectVersion is not null)
+                lines.Add(string.Format(Strings.ToolTipProjectVersion, projectVersion));
+            else if (StrideVersionName is null)
+                lines.Add(Strings.UnknownVersion);
+            if (defaultOption?.TargetVersion is { } target && target != projectVersion)
+                lines.Add(string.Format(defaultOption.IsUpgrade ? Strings.ToolTipProjectOpensWithUpgrade : Strings.ToolTipProjectOpensWith, target));
+            return string.Join(Environment.NewLine, lines);
+        }
+    }
 
     public ICommandBase ExploreCommand { get; }
+
+    /// <summary>
+    /// Gets the command that opens the solution of the project with its default application (Visual Studio, Rider...).
+    /// </summary>
+    public ICommandBase OpenInIDECommand { get; }
+
+    public ICommandBase CopySolutionPathCommand { get; }
+
+    public ICommandBase CopyFolderPathCommand { get; }
 
     public ICommandBase OpenCommand { get; }
 
@@ -59,15 +121,64 @@ public sealed class RecentProjectViewModel : DispatcherViewModel
 
     private void DiscoverStrideVersion()
     {
+        // A recent project can be moved or deleted: then there is no version to find (shown as unknown), and it can't be opened
+        if (!File.Exists(FullPath))
+        {
+            StrideVersionName = null;
+            OnPropertyChanged(nameof(StrideVersionDisplayName), nameof(ToolTip));
+            return;
+        }
+
         Task.Run(async () =>
         {
             var packageVersion = await PackageSessionHelper.GetPackageVersion(fullPath);
             stridePackageVersion = packageVersion?.ToString();
+            projectVersion = packageVersion;
             StrideVersion = packageVersion is not null ? new Version(packageVersion.Version.Major, packageVersion.Version.Minor) : null;
             StrideVersionName = StrideVersion?.ToString();
+            OnPropertyChanged(nameof(StrideVersionDisplayName));
 
-            Dispatcher.Invoke(() => OpenCommand.IsEnabled = StrideVersionName is not null);
+            Dispatcher.Invoke(() =>
+            {
+                OpenCommand.IsEnabled = StrideVersionName is not null;
+                // The versions can be listed before the project's version is known
+                UpdateOpenOptions(Launcher.StrideVersions);
+            });
         });
+    }
+
+    private void OpenInIDE()
+    {
+        // The project can be moved or deleted since it was listed
+        if (!File.Exists(FullPath))
+            return;
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(FullPath) { UseShellExecute = true });
+        }
+        catch (Exception e)
+        {
+            // No application for solutions: nothing the user can act on here
+            e.Ignore();
+        }
+    }
+
+    // Through the main window: in Avalonia, the clipboard belongs to a window
+    private static async Task CopyToClipboard(string text)
+    {
+        if (Avalonia.Application.Current is not App { MainWindow.Clipboard: { } clipboard })
+            return;
+
+        try
+        {
+            await clipboard.SetTextAsync(text);
+        }
+        catch (Exception e)
+        {
+            // Clipboard in use by another application: nothing the user can act on here
+            e.Ignore();
+        }
     }
 
     private void Explore()
@@ -149,34 +260,14 @@ public sealed class RecentProjectViewModel : DispatcherViewModel
 
     private void Remove()
     {
-        //Remove files that's was deleted or upgraded by stride versions <= 3.0
-        if (string.IsNullOrEmpty(StrideVersionName) || string.Compare(StrideVersionName, "3.0", StringComparison.Ordinal) <= 0)
-        {
-            //Get all installed versions 
-            var strideInstalledVersions = Launcher.StrideVersions.Where(x => x.CanDelete)
-                .Select(x => $"{x.Major}.{x.Minor}").ToList();
-
-            //If original version of files is not in list get and to add it.
-            if (!string.IsNullOrEmpty(StrideVersionName) && !strideInstalledVersions.Any(x => x.Equals(StrideVersionName)))
-                strideInstalledVersions.Add(StrideVersionName);
-
-            foreach (var item in strideInstalledVersions)
-            {
-                GameStudioSettings.RemoveMostRecentlyUsed(fullPath, item);
-            }
-        }
-        else
-        {
-            GameStudioSettings.RemoveMostRecentlyUsed(fullPath, StrideVersionName);
-        }
+        GameStudioSettings.RemoveMostRecentlyUsed(fullPath);
     }
 
-    private async Task OpenWith(StrideVersionViewModel? version)
+    private async Task OpenWith(OpenWithOption? option)
     {
         string message;
-        // The exact version when it is installed (a dev build), else the installed one of the same major.minor.
-        version ??= Launcher.StrideVersions.FirstOrDefault(x => x.CanDelete && x.FullName == stridePackageVersion)
-            ?? Launcher.StrideVersions.FirstOrDefault(x => new Version(x.Major, x.Minor) == StrideVersion);
+        option ??= DefaultOption(Launcher.StrideVersions);
+        var version = option?.Version;
         if (version is null)
         {
             message = string.Format(Strings.ErrorDoNotFindVersion, StrideVersion);
@@ -199,7 +290,135 @@ public sealed class RecentProjectViewModel : DispatcherViewModel
             }
             return;
         }
+        // Game Studio doesn't open a project on a newer version, unless it's a switch it accepts
+        if (option!.Build is null && version is StrideStoreVersionViewModel && projectVersion is not null
+            && version.InstalledVersion is { } installed && installed < projectVersion && !OpensNewerProject(projectVersion, installed))
+        {
+            message = string.Format(Strings.ErrorVersionTooOld, projectVersion, version.InstalledVersion);
+            await ServiceProvider.Get<IDialogService>().MessageBoxAsync(message, MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        option.Build?.SetAsActiveCommand.Execute();
         Launcher.ActiveVersion = version;
         Launcher.StartStudio(FullPath).Forget();
     }
+
+    /// <summary>
+    /// Updates the versions the project can be opened with, and whether they upgrade it.
+    /// </summary>
+    internal void UpdateOpenOptions(IEnumerable<StrideVersionViewModel> versions)
+    {
+        CompatibleVersions.Clear();
+        defaultOption = DefaultOption(versions);
+        UpgradeToolTip = defaultOption is { IsUpgrade: true }
+            ? string.Format(Strings.ToolTipOpenUpgrades, projectVersion, defaultOption.TargetVersion)
+            : null;
+        OnPropertyChanged(nameof(ToolTip));
+
+        // Manually discarding the possibility to upgrade from 1.0
+        if (StrideVersionName == "1.0")
+        {
+            HasUpgradeOption = false;
+            return;
+        }
+
+        // Every installed version but the one a click opens the project with, and none that Game Studio doesn't
+        // open it with: below its major.minor, or an older build of it (unless it's a switch Game Studio accepts).
+        // The builds of the project's major.minor are listed one by one, as they are the ones it's on
+        foreach (var version in versions)
+        {
+            if (version is StrideStoreVersionViewModel storeVersion && new Version(version.Major, version.Minor) == StrideVersion)
+            {
+                foreach (var build in storeVersion.AlternateVersions.Where(x => x.LocalPackage is not null).OrderByDescending(x => x.Version))
+                {
+                    if (defaultOption?.Version == version && defaultOption.TargetVersion == build.Version)
+                        continue;
+                    if (projectVersion is not null && build.Version < projectVersion && !OpensNewerProject(projectVersion, build.Version))
+                        continue;
+                    CompatibleVersions.Add(new(version, build, projectVersion));
+                }
+                continue;
+            }
+
+            if (version == defaultOption?.Version)
+                continue;
+            // A dev version added by hand may have no package: we suppose it works with any project
+            var installedVersion = version.InstalledVersion;
+            if (installedVersion is null && version is not StrideDevVersionViewModel)
+                continue;
+            if (installedVersion is not null && StrideVersion is not null
+                && new Version(installedVersion.Version.Major, installedVersion.Version.Minor) < StrideVersion)
+                continue;
+
+            CompatibleVersions.Add(new(version, null, projectVersion));
+        }
+        HasUpgradeOption = CompatibleVersions.Any(IsSuggestedUpgrade);
+    }
+
+    /// <summary>
+    /// Gets the option a click on this project opens it with: the exact build it references when that one is installed,
+    /// else the newest installed build of its major.minor (an upgrade, when new enough).
+    /// </summary>
+    private OpenWithOption? DefaultOption(IEnumerable<StrideVersionViewModel> versions)
+    {
+        // The WPF and the Avalonia Game Studio of a checkout are two local builds of the same version: the active one, else one that starts
+        var exactBuilds = versions.Where(x => x is not StrideStoreVersionViewModel && x.CanDelete && x.FullName == stridePackageVersion).ToList();
+        var exact = exactBuilds.FirstOrDefault(x => x == Launcher.ActiveVersion) ?? exactBuilds.FirstOrDefault(x => x.CanStart) ?? exactBuilds.FirstOrDefault();
+        if (exact is not null)
+            return new(exact, null, projectVersion);
+
+        // The row of the project's kind of build (nightly or not), else the other one of its major.minor
+        var sameMinorRows = versions.OfType<StrideStoreVersionViewModel>().Where(x => new Version(x.Major, x.Minor) == StrideVersion).ToList();
+        var sameMinor = sameMinorRows.FirstOrDefault(x => x.IsNightly == (projectVersion?.IsNightly ?? false)) ?? sameMinorRows.FirstOrDefault();
+        if (sameMinor is null)
+            return null;
+
+        var builds = sameMinor.AlternateVersions.Where(x => x.LocalPackage is not null).ToList();
+        var build = builds.FirstOrDefault(x => x.Version == projectVersion)
+            ?? builds.Where(x => projectVersion is null || x.Version >= projectVersion || OpensNewerProject(projectVersion, x.Version)).MaxBy(x => x.Version);
+        return new(sameMinor, build, projectVersion);
+    }
+
+    /// <summary>
+    /// Gets whether the Game Studio of <paramref name="editorVersion"/> opens a project on the newer
+    /// <paramref name="projectVersion"/>. A copy of its rule, PackageSession.IsVersionSwitch: from 4.5, a version with the
+    /// same number (the same upgrader gates), or one of them a local or nightly build and the editor on the same major.minor
+    /// or newer. Before 4.5, only that last case with a local build.
+    /// </summary>
+    internal static bool OpensNewerProject(PackageVersion projectVersion, PackageVersion editorVersion)
+    {
+        var editorLine = new Version(editorVersion.Version.Major, editorVersion.Version.Minor);
+        var switchBuild = projectVersion.IsLocalBuild || editorVersion.IsLocalBuild;
+        if (editorLine >= new Version(4, 5))
+        {
+            if (projectVersion.Version == editorVersion.Version)
+                return true;
+            switchBuild |= projectVersion.IsNightly || editorVersion.IsNightly;
+        }
+        return switchBuild && editorLine >= new Version(projectVersion.Version.Major, projectVersion.Version.Minor);
+    }
+
+    /// <summary>
+    /// Gets whether opening a project on <paramref name="projectVersion"/> with <paramref name="targetVersion"/> upgrades
+    /// it: a newer version, unless one of them is a local build and the target has the same major.minor (4.4.0-beta8 and
+    /// 4.4.0-dev3 switch). A newer nightly or a build with the same number stays an upgrade, even if Game Studio can go back.
+    /// </summary>
+    internal static bool IsUpgrade(PackageVersion? projectVersion, PackageVersion? targetVersion)
+    {
+        if (projectVersion is null || targetVersion is null || targetVersion <= projectVersion)
+            return false;
+        var switchesBack = (projectVersion.IsLocalBuild || targetVersion.IsLocalBuild)
+            && new Version(projectVersion.Version.Major, projectVersion.Version.Minor) >= new Version(targetVersion.Version.Major, targetVersion.Version.Minor);
+        return !switchesBack;
+    }
+
+    private bool IsSuggestedUpgrade(OpenWithOption option) => IsSuggestedUpgrade(projectVersion, option.TargetVersion);
+
+    /// <summary>
+    /// Gets whether opening a project on <paramref name="projectVersion"/> with <paramref name="targetVersion"/> is an
+    /// upgrade to suggest: to a release, as a local build is for its developer, and to a nightly only from a nightly.
+    /// </summary>
+    internal static bool IsSuggestedUpgrade(PackageVersion? projectVersion, PackageVersion? targetVersion)
+        => IsUpgrade(projectVersion, targetVersion) && !targetVersion!.IsLocalBuild
+           && (!targetVersion.IsNightly || projectVersion is { IsNightly: true });
 }

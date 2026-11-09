@@ -1,6 +1,6 @@
 name: Release Launcher
 # The run list shows the options of each run (the version comes from the nuspec: see the run summary)
-run-name: Launcher ${{ inputs.version-suffix || 'release' }}${{ inputs.sign && ' · sign' || '' }}${{ inputs.deploy && ' · deploy' || '' }}${{ inputs.checkpoint && ' · checkpoint' || '' }}${{ inputs.legacy-req && ' · legacy-req' || '' }}
+run-name: Launcher ${{ inputs.version-suffix || 'release' }}${{ inputs.sign && ' · sign' || '' }}${{ inputs.deploy && ' · deploy' || '' }}${{ inputs.checkpoint && ' · checkpoint' || '' }}
 
 on:
   workflow_dispatch:
@@ -19,10 +19,6 @@ on:
         type: string
       checkpoint:
         description: Every older launcher updates to this version before any newer one (e.g. a version that migrates something the next ones need).
-        default: false
-        type: boolean
-      legacy-req:
-        description: 6.0.1 only - also publish X.Y.Z-req, which launchers before 6.0.1 update to before any newer version (they have no pre-release filter).
         default: false
         type: boolean
       upload-binlog:
@@ -92,7 +88,7 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          $out = msbuild build\Stride.build /t:_StrideSetupVersion /nologo /v:m /p:VersionSuffix=${{ inputs.version-suffix }}
+          $out = msbuild build\package.proj /t:_StrideSetupVersion /nologo /v:m /p:VersionSuffix=${{ inputs.version-suffix }}
           if ($LASTEXITCODE -ne 0) { $out; exit 1 }
           if (-not (($out -join "`n") -match 'StrideSetup (\S+):')) {
             echo "::error::Could not determine the launcher version"
@@ -112,14 +108,6 @@ jobs:
             echo "::error::$release is already released, so $version would sort below it. Bump the version in Stride.Launcher.nuspec."
             exit 1
           }
-          # Launchers before 6.0.1 have no pre-release filter: only a 6.x "-req" version (legacy-req) keeps them off it
-          if ($version -ne $release) {
-            $published = (Invoke-RestMethod https://api.nuget.org/v3-flatcontainer/stride.launcher/index.json).versions
-            if (-not ($published -match '^([6-9]|\d{2,})\.\d+\.\d+-req$')) {
-              echo "::error::No 6.x -req launcher on NuGet: launchers before 6.0.1 would update to this pre-release. Release 6.0.1 with legacy-req first."
-              exit 1
-            }
-          }
 
       - name: Install Advanced Installer
         shell: pwsh
@@ -133,15 +121,14 @@ jobs:
       - name: Build and package launcher
         shell: pwsh
         run: |
-          msbuild build\Stride.build `
+          msbuild build\package.proj `
             /t:FullBuildLauncher `
             ${{ inputs.upload-binlog && !inputs.sign && '/bl' || '' }} /m /nr:false `
             /p:StrideSentryDsn=${{ vars.STRIDE_SENTRY_DSN }} `
             /p:StrideSentryEnvironment=${{ vars.STRIDE_SENTRY_DSN != '' && 'release' || '' }} `
             /p:StrideSign=${{ inputs.sign }} `
             /p:VersionSuffix=${{ inputs.version-suffix }} `
-            /p:StrideLauncherUpdateCheckpoint=${{ inputs.checkpoint }} `
-            /p:StrideLauncherLegacyReq=${{ inputs.legacy-req }}
+            /p:StrideLauncherUpdateCheckpoint=${{ inputs.checkpoint }}
         env:
           StrideSignTenantId: ${{ secrets.STRIDE_SIGN_TENANT_ID }}
           StrideSignClientId: ${{ secrets.STRIDE_SIGN_CLIENT_ID }}
@@ -159,7 +146,7 @@ jobs:
             "## Stride Launcher ${{ steps.version.outputs.version }}"
             ""
             "- Deploy: $(& $yesNo '${{ inputs.deploy }}') · Signed: $(& $yesNo '${{ inputs.sign }}') · Pre-release: $(& $yesNo '${{ inputs.version-suffix != '' }}')"
-            "- Checkpoint: $(& $yesNo '${{ inputs.checkpoint }}') · legacy-req: $(& $yesNo '${{ inputs.legacy-req }}')"
+            "- Checkpoint: $(& $yesNo '${{ inputs.checkpoint }}')"
           )
           foreach ($nupkg in Get-ChildItem -Path bin/launcher -Filter "*.nupkg") {
             $zip = [System.IO.Compression.ZipFile]::OpenRead($nupkg.FullName)
@@ -199,7 +186,10 @@ jobs:
     if: ${{ inputs.deploy && inputs.sign }}
     needs: Package
     runs-on: ubuntu-latest
-    environment: production  # STRIDE_NUGET_API_KEY lives here; requires manual approval in GitHub settings
+    environment: production  # requires manual approval in GitHub settings
+    permissions:
+      contents: read
+      id-token: write # nuget.org trusted publishing
     steps:
       - uses: actions/checkout@v7  # full history + tags for the launcher-scoped changelog
         with:
@@ -265,6 +255,13 @@ jobs:
             ${{ inputs.version-suffix != '' && '--prerelease' || '' }} \
             bin/launcher/*.exe
 
+      # A short-lived key from nuget.org's trusted publishing policy for this workflow file, instead of a stored one
+      - name: NuGet login
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.STRIDE_NUGET_USER }}
+
       # After the GitHub release: the packages point to its setup (launchers that must reinstall download it)
       - name: Push to NuGet
         shell: pwsh
@@ -275,9 +272,10 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit 1 }
           }
         env:
-          STRIDE_NUGET_API_KEY: ${{ secrets.STRIDE_NUGET_API_KEY }}
+          STRIDE_NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
 
-      # The download button of stride3d.net points to the setup of the release
+      # Points the stride3d.net download button to this setup: committed to stride-website
+      # master, live with the next website release (deployed from its release branch)
       - name: Update the website download
         if: ${{ needs.Package.outputs.version != '' && inputs.version-suffix == '' }}
         env:
@@ -289,15 +287,17 @@ jobs:
           cd website
           URL="https://github.com/stride3d/stride/releases/download/launcher/$VERSION/StrideSetup-$VERSION.exe"
           # Setting a key the site doesn't have (renamed) would add one that nothing reads
-          if ! jq -e 'has("stride-download-url")' _data/site.json > /dev/null; then
-            echo "::error::No stride-download-url in _data/site.json of stride-website"
+          if ! jq -e '.links | has("stride-download-url")' _data/site.json > /dev/null; then
+            echo "::error::No links.stride-download-url in _data/site.json of stride-website"
             exit 1
           fi
-          jq --arg url "$URL" '."stride-download-url" = $url' _data/site.json > site.json.tmp
+          jq --arg url "$URL" '.links."stride-download-url" = $url' _data/site.json > site.json.tmp
           mv site.json.tmp _data/site.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "Download the Stride Launcher $VERSION setup"
+          git commit -am "feat: The download button points to the Stride Launcher $VERSION setup (GitHub release)" \
+            -m "https://github.com/stride3d/stride/releases/tag/launcher/$VERSION" \
+            -m "Updated by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           git push
 
   #
@@ -321,4 +321,4 @@ jobs:
       apply: true
     secrets:
       gh-token: ${{ secrets.GH_PAT }}
-      anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+      anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY_RELEASE_NOTES }}
